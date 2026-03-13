@@ -72,8 +72,8 @@ function TrackingPage() {
         <meta name="author" content="BRNK" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         <meta name="referrer" content="origin-when-cross-origin" />
-        <link rel="alternate" hrefLang="en" href="https://brnk.in/track" />
-        <link rel="alternate" hrefLang="x-default" href="https://brnk.in/track" />
+        <link rel="alternate" hreflang="en" href="https://brnk.in/track" />
+        <link rel="alternate" hreflang="x-default" href="https://brnk.in/track" />
         <link rel="canonical" href="https://brnk.in/track" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://brnk.in/track" />

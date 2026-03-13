@@ -33,7 +33,7 @@ describe('linkRoutes', () => {
 
     handler(req, res);
 
-    expect(res.statusCode).toBe(401);
+    expect(res.statusCode).toBe(403);
     expect(res.contentType).toBe('html');
     expect(res.body).toContain('Unauthorized');
     expect(res.body).toContain('not available for direct access');

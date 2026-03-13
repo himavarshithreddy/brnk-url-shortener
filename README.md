@@ -1,6 +1,6 @@
-# **brnk — URLs on diet.**
+# **BRNK — URLs on diet.**
 
-**brnk** is a bold, fast, and free URL shortener & QR code generator. Paste any long link, get a clean short URL or a styled QR code in seconds — no sign-up, no fluff. Heavy borders, hard shadows, and raw typography. That's the brnk way.
+**BRNK** is a bold, fast, and free URL shortener & QR code generator. Paste any long link, get a clean short URL or a styled QR code in seconds — no sign-up, no fluff. Heavy borders, hard shadows, and raw typography. That's the brnk way.
 
 ---
 

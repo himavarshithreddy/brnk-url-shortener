@@ -14,6 +14,11 @@
       }
     ],
     "routes": [
+      {
+        "src": "/(.*)",
+        "has": [{ "type": "host", "value": "back.brnk.in" }],
+        "dest": "/backend/server.js"
+      },
       { "src": "/health", "dest": "/backend/server.js" },
       { "src": "/shorten", "dest": "/backend/server.js" },
       { "src": "/track/([^/]+)", "dest": "/backend/server.js" },

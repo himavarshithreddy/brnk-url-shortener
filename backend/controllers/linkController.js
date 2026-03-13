@@ -1,17 +1,49 @@
-const { createLink, getRedirectRecord, findByShortCode, incrementClickCount, checkRedisConnection, warmupReady } = require('../models/Link');
+const { createLink, getRedirectRecord, findByShortCode, incrementClickCount, checkRedisConnection, ensureReady } = require('../models/Link');
 const { customAlphabet } = require('nanoid');
-const { recordLinkCreation, recordRedirect, recordFlaggedLink, detectClickAnomaly, getDashboardData } = require('../middleware/monitoring');
+const { recordLinkCreation, recordRedirect, detectClickAnomaly, getDashboardData } = require('../middleware/monitoring');
 
 const MIN_TTL_SECONDS = 60;
-const MAX_TTL_SECONDS = 31536000; // 1 year
+const MAX_TTL_SECONDS = 31_536_000; // 1 year
 const VALID_REDIRECT_TYPES = new Set(['301', '302', '308']);
 const SHORT_CODE_LENGTH = 4;
 const SHORT_CODE_ALPHABET = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 const generateShortCode = customAlphabet(SHORT_CODE_ALPHABET, SHORT_CODE_LENGTH);
 
-/**
- * Validate that a string is a well-formed URL.
- */
+// Pre-compiled regex – avoids re-compilation on every request
+const VALID_SHORT_CODE_RE = /^[a-zA-Z0-9_-]+$/;
+const VALID_CUSTOM_CODE_RE = /^[a-zA-Z0-9-]+$/;
+
+// ---------------------------------------------------------------------------
+// Short-code pre-generation pool
+// Generates codes in background so the creation path never blocks on nanoid.
+// ---------------------------------------------------------------------------
+const CODE_POOL_SIZE = 256;
+const CODE_POOL_REFILL = 192;
+const codePool = [];
+
+function refillCodePool() {
+  while (codePool.length < CODE_POOL_SIZE) {
+    codePool.push(generateShortCode());
+  }
+}
+refillCodePool();
+
+function getPooledCode() {
+  if (codePool.length === 0) {
+    return generateShortCode();
+  }
+  const code = codePool.pop();
+  if (codePool.length < CODE_POOL_REFILL) {
+    // Schedule async refill on next tick to avoid blocking
+    setImmediate(refillCodePool);
+  }
+  return code;
+}
+
+// Pre-allocated header objects to avoid per-request object creation
+const CACHE_HEADERS_PERMANENT = { 'Cache-Control': 'public, max-age=86400, immutable' };
+const CACHE_HEADERS_NOSTORE = { 'Cache-Control': 'no-store' };
+
 function isValidUrl(string) {
   try {
     const url = new URL(string);
@@ -21,7 +53,6 @@ function isValidUrl(string) {
   }
 }
 
-// Controller to create a shortened URL
 const createShortUrl = async (req, res) => {
   const { originalUrl, customShortCode, ttl, redirectType } = req.body;
 
@@ -38,7 +69,7 @@ const createShortUrl = async (req, res) => {
   }
 
   if (customShortCode) {
-    if (!/^[a-zA-Z0-9-]+$/.test(customShortCode)) {
+    if (!VALID_CUSTOM_CODE_RE.test(customShortCode)) {
       return res.status(400).json({ error: 'Short code can only contain letters, numbers, and hyphens' });
     }
     if (customShortCode.length > 20) {
@@ -46,14 +77,13 @@ const createShortUrl = async (req, res) => {
     }
   }
 
-  // Validate redirect type
   const resolvedRedirectType = redirectType && VALID_REDIRECT_TYPES.has(String(redirectType))
     ? String(redirectType)
     : '308';
 
-  const shortCode = customShortCode || generateShortCode();
+  // Use the pre-generated pool for random codes
+  const shortCode = customShortCode || getPooledCode();
 
-  // Validate TTL if provided
   let ttlSeconds = null;
   if (ttl) {
     ttlSeconds = parseInt(ttl, 10);
@@ -66,13 +96,12 @@ const createShortUrl = async (req, res) => {
   }
 
   try {
-    await warmupReady;
+    await ensureReady();
     const link = await createLink(shortCode, originalUrl, ttlSeconds, resolvedRedirectType);
     if (!link) {
       return res.status(400).json({ error: 'Shortcode already exists' });
     }
 
-    // Record creation for monitoring
     const clientIp = req.securityMeta?.clientIp || req.ip || 'unknown';
     recordLinkCreation(shortCode, originalUrl, clientIp);
 
@@ -86,55 +115,57 @@ const createShortUrl = async (req, res) => {
   }
 };
 
-// Controller to redirect to the original URL (optimised fast path)
+// ---------------------------------------------------------------------------
+// Redirect handler – the absolute hot path.
+// Every microsecond here matters because this runs on every link click.
+// Optimisations:
+//   1. ensureReady() resolves synchronously after first call (no await overhead)
+//   2. record.r is already an integer (normalised in Link model)
+//   3. Pre-allocated header objects avoid per-request object creation
+//   4. Monitoring/analytics run fire-and-forget after res.end()
+// ---------------------------------------------------------------------------
 const getOriginalUrl = async (req, res) => {
   const { shortCode } = req.params;
 
-  // Validate format locally before any I/O
-  if (!shortCode || !/^[a-zA-Z0-9_-]+$/.test(shortCode)) {
+  if (!shortCode || !VALID_SHORT_CODE_RE.test(shortCode)) {
     return res.status(404).json({ error: 'Link not found' });
   }
 
   try {
-    await warmupReady;
+    await ensureReady();
     const record = await getRedirectRecord(shortCode);
 
     if (!record) {
       return res.status(404).json({ error: 'Link not found' });
     }
 
-    // Expired?
     if (record.t > 0 && Date.now() > record.t) {
       return res.status(410).json({ error: 'Link has expired' });
     }
 
-    // Disabled?
     if (record.e !== 1) {
       return res.status(404).json({ error: 'Link not found' });
     }
 
-    const statusCode = parseInt(record.r, 10) || 308;
+    // record.r is already an integer (normalised at cache/fetch time)
+    const statusCode = record.r || 308;
 
-    // Record redirect for monitoring (fire-and-forget)
+    // Send redirect with pre-allocated headers
+    res.set('Location', record.u);
+    if (statusCode === 301 || statusCode === 308) {
+      res.set(CACHE_HEADERS_PERMANENT);
+    } else {
+      res.set(CACHE_HEADERS_NOSTORE);
+    }
+    res.status(statusCode).end();
+
+    // Fire-and-forget analytics after the response is sent
+    incrementClickCount(shortCode).catch(() => {});
     recordRedirect(shortCode);
 
-    // Check for anomalous click patterns (possible phishing)
     if (detectClickAnomaly(shortCode)) {
       console.warn(`[ANOMALY] Link ${shortCode} has anomalous click volume`);
     }
-
-    // Send redirect immediately with minimal headers
-    res.set('Location', record.u);
-    if (statusCode === 301 || statusCode === 308) {
-      res.set('Cache-Control', 'public, max-age=86400, immutable');
-    } else {
-      res.set('Cache-Control', 'no-store');
-    }
-    res.status(statusCode).end();
-    // Increment click count asynchronously (fire-and-forget) to avoid delaying the redirect
-    incrementClickCount(shortCode).catch(err =>
-      console.error('Failed to increment click count for', shortCode, ':', err.message)
-    );
   } catch (err) {
     if (err.message === 'Redis connection is not available') {
       return res.status(503).json({ error: 'Service temporarily unavailable. Please try again later.' });
@@ -144,11 +175,11 @@ const getOriginalUrl = async (req, res) => {
   }
 };
 
-// Controller to track clicks and return link info
 const trackClicks = async (req, res) => {
   const { shortCode } = req.params;
 
   try {
+    await ensureReady();
     const link = await findByShortCode(shortCode);
     if (!link) {
       return res.status(404).json({ error: 'Link not found' });
@@ -192,12 +223,12 @@ const monitoringDashboard = async (req, res) => {
 const getLinkInfo = async (req, res) => {
   const { shortCode } = req.params;
 
-  if (!shortCode || !/^[a-zA-Z0-9_-]+$/.test(shortCode)) {
+  if (!shortCode || !VALID_SHORT_CODE_RE.test(shortCode)) {
     return res.status(404).json({ error: 'Link not found' });
   }
 
   try {
-    await warmupReady;
+    await ensureReady();
     const record = await getRedirectRecord(shortCode);
 
     if (!record) {

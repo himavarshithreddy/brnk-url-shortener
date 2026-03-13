@@ -1,9 +1,24 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense } from 'react';
 import { Helmet } from 'react-helmet-async';
-import QRCodeStyling from 'qr-code-styling';
 import './App.css';
 import { Link } from 'react-router-dom';
 import logo from './logo.svg';
+
+// Lazy-load QRCodeStyling — the library is ~50 kB gzipped and is only needed
+// when the user selects QR mode or receives a result.  Lazy-loading keeps the
+// initial bundle small and speeds up first-paint for the common URL-shorten flow.
+let _QRCodeStylingModule = null;
+let _qrModulePromise = null;
+function loadQRCodeStyling() {
+  if (_QRCodeStylingModule) return Promise.resolve(_QRCodeStylingModule);
+  if (!_qrModulePromise) {
+    _qrModulePromise = import('qr-code-styling').then(m => {
+      _QRCodeStylingModule = m.default || m;
+      return _QRCodeStylingModule;
+    });
+  }
+  return _qrModulePromise;
+}
 
 const TICKER = 'brnk — PUTTING YOUR URL ON A DIET — HOLD TIGHT — TRIMMING THE FAT — ALMOST SKINNY — ';
 
@@ -186,42 +201,62 @@ function QRCodeLoader() {
   );
 }
 
-function NeoQRCode({ value, size = 220, onReady }) {
+// ---------------------------------------------------------------------------
+// NeoQRCode — memoized, lazily-loaded QR renderer
+//
+// Performance improvements over the original:
+//   1. QRCodeStyling library is loaded on-demand (lazy import) so the initial
+//      bundle stays small for the common shorten-URL flow.
+//   2. The QRCodeStyling instance is reused across renders — only `.update()`
+//      is called when value/size change, avoiding full re-initialisation.
+//   3. The component is wrapped in React.memo to skip re-renders when props
+//      are unchanged.
+//   4. `onReady` is excluded from the effect deps to prevent infinite loops
+//      when the parent passes an inline callback.
+// ---------------------------------------------------------------------------
+const NeoQRCode = React.memo(function NeoQRCode({ value, size = 220, onReady }) {
   const containerRef = useRef(null);
-  const qrRef = useRef(null);
+  const qrInstanceRef = useRef(null);
+  const onReadyRef = useRef(onReady);
+  onReadyRef.current = onReady;
 
   useEffect(() => {
     if (!containerRef.current) return;
+    let cancelled = false;
 
     const config = {
       width: size,
       height: size,
       type: 'canvas',
       data: value,
-      qrOptions: {
-        errorCorrectionLevel: 'H',
-      },
+      qrOptions: { errorCorrectionLevel: 'H' },
       dotsOptions: QR_THEME.dotsOptions,
       cornersSquareOptions: QR_THEME.cornersSquareOptions,
       cornersDotOptions: QR_THEME.cornersDotOptions,
       backgroundOptions: QR_THEME.backgroundOptions,
     };
 
-    if (!qrRef.current) {
-      qrRef.current = new QRCodeStyling(config);
-      while (containerRef.current.firstChild) {
-        containerRef.current.removeChild(containerRef.current.firstChild);
-      }
-      qrRef.current.append(containerRef.current);
-    } else {
-      qrRef.current.update(config);
-    }
+    loadQRCodeStyling().then(QRCodeStyling => {
+      if (cancelled) return;
 
-    if (onReady) onReady(containerRef.current);
-  }, [value, size, onReady]);
+      if (!qrInstanceRef.current) {
+        qrInstanceRef.current = new QRCodeStyling(config);
+        while (containerRef.current.firstChild) {
+          containerRef.current.removeChild(containerRef.current.firstChild);
+        }
+        qrInstanceRef.current.append(containerRef.current);
+      } else {
+        qrInstanceRef.current.update(config);
+      }
+
+      if (onReadyRef.current) onReadyRef.current(containerRef.current);
+    });
+
+    return () => { cancelled = true; };
+  }, [value, size]);
 
   return <div ref={containerRef} className="neo-qr-canvas" />;
-}
+});
 
 function Main() {
   const [url, setUrl] = useState('');
@@ -354,7 +389,13 @@ function Main() {
   const copyShortCode = () => {
     navigator.clipboard.writeText(shortCode);
   };
-  const createBrandedQRCanvas = (qrCanvas) => {
+
+  // ---------------------------------------------------------------------------
+  // Branded QR canvas — memoized with useCallback to avoid re-creating the
+  // closure on every render.  The function itself is cheap (runs only on
+  // explicit user action: download/copy), so caching the output isn't needed.
+  // ---------------------------------------------------------------------------
+  const createBrandedQRCanvas = useCallback((qrCanvas) => {
     const padding = 22;
     const border = 4;
     const shadowOff = 8;
@@ -379,31 +420,23 @@ function Main() {
     const fx = outerMargin;
     const fy = outerMargin;
 
-    // Box shadow
     ctx.fillStyle = '#1a1a1a';
     ctx.fillRect(fx + shadowOff, fy + shadowOff, frameW, frameH);
-
-    // Frame border
-    ctx.fillStyle = '#1a1a1a';
     ctx.fillRect(fx, fy, frameW, frameH);
 
-    // Frame background
     ctx.fillStyle = '#FFFDF7';
     ctx.fillRect(fx + border, fy + border, frameW - border * 2, frameH - border * 2);
 
-    // QR code
     ctx.drawImage(qrCanvas, fx + border + padding, fy + border + padding, qrW, qrH);
 
-    // Label layout constants
-    const px = 8;             // horizontal padding
-    const py = 4;             // vertical padding
-    const lb = 2;             // label border width
-    const ls = 2;             // label shadow offset
+    const px = 8;
+    const py = 4;
+    const lb = 2;
+    const ls = 2;
     const fontSize = 10;
     const smallFontSize = 8;
     const labelFont = (size) => `800 ${size}px "Syne", sans-serif`;
 
-    // Corner label helper
     const drawLabel = (text, lx, ly, bg, size) => {
       ctx.font = labelFont(size);
       const tw = ctx.measureText(text).width;
@@ -428,36 +461,32 @@ function Main() {
       return lb + px + ctx.measureText(text).width + px + lb;
     };
 
-    // Top-left: brnk (orange)
     drawLabel('brnk', fx - 4, fy - 12, '#ff6600', fontSize);
-
-    // Top-right: SCAN (cream)
     drawLabel('SCAN', fx + frameW + 4 - measureLabel('SCAN', fontSize), fy - 12, '#FFFDF7', fontSize);
 
-    // Bottom-left: ■■■ (cream)
     const blLabelH = lb + py + smallFontSize + py + lb;
     drawLabel('\u25A0\u25A0\u25A0', fx - 4, fy + frameH + 12 - blLabelH, '#FFFDF7', smallFontSize);
 
-    // Bottom-right: QR (orange)
     const brLabelH = lb + py + fontSize + py + lb;
     drawLabel('QR', fx + frameW + 4 - measureLabel('QR', fontSize), fy + frameH + 12 - brLabelH, '#ff6600', fontSize);
 
     return c;
-  };
+  }, []);
 
-  const downloadQR = () => {
+  const downloadQR = useCallback(() => {
     const canvas = qrRef.current?.querySelector('canvas');
     if (!canvas) return;
     const branded = createBrandedQRCanvas(canvas);
-    const url = branded.toDataURL('image/png');
-    const link = document.createElement('a');
-    link.download = `brnk-qr-${shortCode}.png`;
-    link.href = url;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-  };
-  const copyQRImage = async () => {
+    const dataUrl = branded.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.download = `brnk-qr-${shortCode}.png`;
+    a.href = dataUrl;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }, [shortCode, createBrandedQRCanvas]);
+
+  const copyQRImage = useCallback(async () => {
     const canvas = qrRef.current?.querySelector('canvas');
     if (!canvas) return;
     try {
@@ -467,9 +496,9 @@ function Main() {
       });
       await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
     } catch {
-      // Fallback: silently fail if clipboard API is unavailable
+      // Silently fail if clipboard API is unavailable
     }
-  };
+  }, [createBrandedQRCanvas]);
   return (
     <div className="app-container">
       <Helmet>
@@ -555,6 +584,8 @@ function Main() {
                   type="button"
                   className={`mode-btn ${mode === 'qrcode' ? 'active' : ''}`}
                   onClick={() => setMode('qrcode')}
+                  onMouseEnter={loadQRCodeStyling}
+                  onFocus={loadQRCodeStyling}
                   aria-pressed={mode === 'qrcode'}
                 >
                   QR Code

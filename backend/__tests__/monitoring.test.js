@@ -48,13 +48,14 @@ describe('recordLinkCreation', () => {
 });
 
 describe('recordRedirect', () => {
-  test('tracks redirect timestamps per link', () => {
+  test('tracks redirect counts per link via SlidingCounter', () => {
     recordRedirect('abc123');
     recordRedirect('abc123');
     recordRedirect('def456');
 
-    expect(_stats.redirectsPerLink.get('abc123').length).toBe(2);
-    expect(_stats.redirectsPerLink.get('def456').length).toBe(1);
+    // SlidingCounter exposes .count() instead of .length
+    expect(_stats.redirectsPerLink.get('abc123').count()).toBe(2);
+    expect(_stats.redirectsPerLink.get('def456').count()).toBe(1);
   });
 });
 

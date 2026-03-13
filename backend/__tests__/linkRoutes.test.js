@@ -16,7 +16,7 @@ function findRouteLayer(pathname, method) {
 }
 
 describe('linkRoutes', () => {
-  test('root route returns backend status response', () => {
+  test('root route returns non-authorization html page', () => {
     const rootLayer = findRouteLayer('/', 'get');
     expect(rootLayer).toBeDefined();
 
@@ -24,14 +24,16 @@ describe('linkRoutes', () => {
     const req = {};
     const res = {
       statusCode: null,
-      body: null,
+      body: '',
       status(code) { this.statusCode = code; return this; },
-      json(value) { this.body = value; return this; },
+      type() { return this; },
+      send(value) { this.body = value; return this; },
     };
 
     handler(req, res);
 
-    expect(res.statusCode).toBe(200);
-    expect(res.body).toEqual({ message: 'BRNK backend is running.' });
+    expect(res.statusCode).toBe(403);
+    expect(res.body).toContain('<title>Access Restricted | BRNK</title>');
+    expect(res.body).toContain('not authorized for direct browsing');
   });
 });

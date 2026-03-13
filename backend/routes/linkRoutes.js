@@ -59,7 +59,23 @@ router.get('/track/:shortCode', generalLimiter, trackClicks);
 
 // Root route for backend service checks
 router.get('/', (req, res) => {
-  res.status(200).json({ message: 'BRNK backend is running.' });
+  res
+    .status(403)
+    .type('html')
+    .send(`<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Access Restricted | BRNK</title>
+</head>
+<body style="font-family: Arial, sans-serif; margin: 0; min-height: 100vh; display: grid; place-items: center; background: #0b1220; color: #e5e7eb;">
+  <main style="text-align: center; max-width: 560px; padding: 24px;">
+    <h1 style="margin-bottom: 12px; color: #ffffff;">Access Restricted</h1>
+    <p style="margin: 0; line-height: 1.6;">This backend endpoint is not authorized for direct browsing. Please use <strong>BRNK.in</strong> to create and manage links.</p>
+  </main>
+</body>
+</html>`);
 });
 
 // Route to get the original URL (catch-all, must be last)

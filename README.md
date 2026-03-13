@@ -37,6 +37,14 @@
 
 ---
 
+## **Documentation**
+
+For complete technical and non-technical documentation, see:
+
+- [`docs/README.md`](docs/README.md)
+
+---
+
 ## **License**
 
 [MIT](LICENSE)

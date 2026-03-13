@@ -1,5 +1,5 @@
 /* =========================================
-   NEO BRUTALISM — Fwshk URL Shortener
+   NEO BRUTALISM — BRNK URL Shortener
    ========================================= */
 
 /* Screen-reader only utility — visually hidden but accessible to assistive technology */
@@ -833,12 +833,12 @@ nav[aria-label="Site navigation"] {
 }
 
 /* ======================================================
-   FWSHK LOADING ANIMATION
+   BRNK LOADING ANIMATION
    Shown in the right panel while the API request is in flight.
    Not a full-screen overlay; lives entirely outside the form.
    ====================================================== */
 
-.fwshk-loader {
+.brnk-loader {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -1276,7 +1276,7 @@ nav[aria-label="Site navigation"] {
 
 /* ---- Desktop: loader fills the right panel ---- */
 @media (min-width: 900px) {
-  .fwshk-loader {
+  .brnk-loader {
     margin-top: 0;
     height: 100%;
     box-shadow: none;

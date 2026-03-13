@@ -1,16 +1,42 @@
 # https://www.robotstxt.org/robotstxt.html
+
+# ── All crawlers ─────────────────────────────────────────────────────────────
 User-agent: *
 Allow: /
 Allow: /track
+
+# API endpoints — return JSON, not web pages
+Disallow: /shorten
+Disallow: /health
+Disallow: /monitoring/
+Disallow: /link-info/
+Disallow: /track/
+
+# Build artifacts
 Disallow: /static/
 Disallow: /asset-manifest.json
 Disallow: /manifest.json
 
-# Search engine crawlers
+# ── Googlebot ─────────────────────────────────────────────────────────────────
+# Use $ (end-of-URL) anchors so only the two real pages are indexed;
+# short-code redirects (e.g. /abc123) are excluded.
 User-agent: Googlebot
-Allow: /
+Allow: /$
+Allow: /track$
+Disallow: /
 
+# ── Bingbot ───────────────────────────────────────────────────────────────────
 User-agent: Bingbot
 Allow: /
+Allow: /track
+Disallow: /shorten
+Disallow: /health
+Disallow: /monitoring/
+Disallow: /link-info/
+Disallow: /track/
+Disallow: /static/
+Disallow: /asset-manifest.json
+Disallow: /manifest.json
 
+# ── Sitemap ───────────────────────────────────────────────────────────────────
 Sitemap: https://brnk.vercel.app/sitemap.xml

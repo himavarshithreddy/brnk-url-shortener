@@ -1,15 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="
+    http://www.sitemaps.org/schemas/sitemap/0.9
+    http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd
+    http://www.google.com/schemas/sitemap-image/1.1
+    http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd">
+
+  <!-- Homepage: URL shortener and QR code generator -->
   <url>
     <loc>https://brnk.vercel.app/</loc>
-    <lastmod>2026-02-20</lastmod>
-    <changefreq>weekly</changefreq>
+    <lastmod>2026-03-13</lastmod>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://brnk.vercel.app/logo512.png</image:loc>
+      <image:title>BRNK — Free URL Shortener &amp; QR Code Generator</image:title>
+      <image:caption>Shorten URLs instantly, generate QR codes, set expiration dates, and track clicks — no sign-up required.</image:caption>
+    </image:image>
   </url>
+
+  <!-- Track page: click analytics and link performance -->
   <url>
     <loc>https://brnk.vercel.app/track</loc>
-    <lastmod>2026-02-20</lastmod>
+    <lastmod>2026-03-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://brnk.vercel.app/logo512.png</image:loc>
+      <image:title>BRNK — Track Your Short Link Clicks &amp; Analytics</image:title>
+      <image:caption>Enter your BRNK short code to view click analytics and track link performance.</image:caption>
+    </image:image>
   </url>
+
 </urlset>

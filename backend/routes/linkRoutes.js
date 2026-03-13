@@ -57,6 +57,11 @@ router.post('/shorten',
 // Route to track clicks (must be before the catch-all /:shortCode route)
 router.get('/track/:shortCode', generalLimiter, trackClicks);
 
+// Prevent direct backend root access from showing platform-level errors
+router.get('/', (req, res) => {
+  res.status(401).type('html').send('<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Unauthorized | BRNK</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:Arial,sans-serif;background:#0f172a;color:#e2e8f0;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}main{text-align:center;padding:24px;max-width:480px}h1{margin:0 0 12px;font-size:1.75rem}p{margin:0;color:#cbd5e1}</style></head><body><main><h1>Unauthorized</h1><p>This endpoint is not available for direct access.</p></main></body></html>');
+});
+
 // Route to get the original URL (catch-all, must be last)
 router.get('/:shortCode', generalLimiter, getOriginalUrl);
 

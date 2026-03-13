@@ -32,6 +32,6 @@ describe('linkRoutes', () => {
     handler(req, res);
 
     expect(res.statusCode).toBe(200);
-    expect(res.body).toEqual({ message: 'BRNK backend is running.' });
+    expect(res.body).toEqual({ message: 'brnk backend is running.' });
   });
 });

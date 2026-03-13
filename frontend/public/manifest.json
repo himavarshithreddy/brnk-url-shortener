@@ -1,6 +1,6 @@
 {
-  "short_name": "BRNK",
-  "name": "BRNK - URL Shortener & QR Code Generator",
+  "short_name": "brnk",
+  "name": "brnk - URL Shortener & QR Code Generator",
   "icons": [
     {
       "src": "favicon.svg",

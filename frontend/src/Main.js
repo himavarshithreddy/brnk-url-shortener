@@ -5,9 +5,9 @@ import './App.css';
 import { Link } from 'react-router-dom';
 import logo from './logo.svg';
 
-const TICKER = 'BRNK — PUTTING YOUR URL ON A DIET — HOLD TIGHT — TRIMMING THE FAT — ALMOST SKINNY — ';
+const TICKER = 'brnk — PUTTING YOUR URL ON A DIET — HOLD TIGHT — TRIMMING THE FAT — ALMOST SKINNY — ';
 
-const QR_TICKER = 'BRNK — GENERATING YOUR QR CODE — HOLD TIGHT — ENCODING PIXELS — ALMOST READY — ';
+const QR_TICKER = 'brnk — GENERATING YOUR QR CODE — HOLD TIGHT — ENCODING PIXELS — ALMOST READY — ';
 const CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
 
 const QR_THEME = {
@@ -21,7 +21,7 @@ const QR_THEME = {
 };
 
 
-function BRNKLoader() {
+function BrnkLoader() {
   const scrambleRef = useRef(null);
   const [percent, setPercent] = useState(0);
 
@@ -428,8 +428,8 @@ function Main() {
       return lb + px + ctx.measureText(text).width + px + lb;
     };
 
-    // Top-left: BRNK (orange)
-    drawLabel('BRNK', fx - 4, fy - 12, '#ff6600', fontSize);
+    // Top-left: brnk (orange)
+    drawLabel('brnk', fx - 4, fy - 12, '#ff6600', fontSize);
 
     // Top-right: SCAN (cream)
     drawLabel('SCAN', fx + frameW + 4 - measureLabel('SCAN', fontSize), fy - 12, '#FFFDF7', fontSize);
@@ -473,10 +473,10 @@ function Main() {
   return (
     <div className="app-container">
       <Helmet>
-        <title>BRNK — Free URL Shortener &amp; QR Code Generator | Custom Short Links &amp; Click Tracking</title>
-        <meta name="description" content="BRNK is a fast, free URL shortener and QR code generator. Create custom short links, generate QR codes, set expiration dates, choose redirect types, and track clicks — all with zero sign-up required." />
+        <title>brnk — Free URL Shortener &amp; QR Code Generator | Custom Short Links &amp; Click Tracking</title>
+        <meta name="description" content="brnk is a fast, free URL shortener and QR code generator. Create custom short links, generate QR codes, set expiration dates, choose redirect types, and track clicks — all with zero sign-up required." />
         <meta name="keywords" content="URL shortener, link shortener, short URL, custom short link, shorten URL, free URL shortener, click tracking, link analytics, short link generator, URL redirect, tiny URL, branded links, QR code generator, QR code maker, URL to QR code, link QR code" />
-        <meta name="author" content="BRNK" />
+        <meta name="author" content="brnk" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         <meta name="referrer" content="origin-when-cross-origin" />
         <link rel="alternate" hreflang="en" href="https://brnk.in/" />
@@ -484,20 +484,20 @@ function Main() {
         <link rel="canonical" href="https://brnk.in/" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://brnk.in/" />
-        <meta property="og:title" content="BRNK — Free URL Shortener & QR Code Generator | Custom Short Links & Click Tracking" />
+        <meta property="og:title" content="brnk — Free URL Shortener & QR Code Generator | Custom Short Links & Click Tracking" />
         <meta property="og:description" content="Shorten any URL in seconds. Create custom short links, generate QR codes, set expiration dates, and track clicks — fast, free, and no sign-up required." />
-        <meta property="og:site_name" content="BRNK" />
+        <meta property="og:site_name" content="brnk" />
         <meta property="og:locale" content="en_US" />
         <meta property="og:image" content="https://brnk.in/logo512.png" />
         <meta property="og:image:width" content="512" />
         <meta property="og:image:height" content="512" />
-        <meta property="og:image:alt" content="BRNK URL shortener and QR code generator logo" />
+        <meta property="og:image:alt" content="brnk URL shortener and QR code generator logo" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:url" content="https://brnk.in/" />
-        <meta name="twitter:title" content="BRNK — Free URL Shortener & QR Code Generator | Custom Short Links & Click Tracking" />
+        <meta name="twitter:title" content="brnk — Free URL Shortener & QR Code Generator | Custom Short Links & Click Tracking" />
         <meta name="twitter:description" content="Shorten any URL in seconds. Create custom short links, generate QR codes, set expiration dates, and track clicks — fast, free, and no sign-up required." />
         <meta name="twitter:image" content="https://brnk.in/logo512.png" />
-        <meta name="twitter:image:alt" content="BRNK URL shortener and QR code generator logo" />
+        <meta name="twitter:image:alt" content="brnk URL shortener and QR code generator logo" />
         <script type="application/ld+json">{`
           {
             "@context": "https://schema.org",
@@ -516,12 +516,12 @@ function Main() {
           {
             "@context": "https://schema.org",
             "@type": "WebPage",
-            "name": "BRNK — Free URL Shortener & QR Code Generator",
+            "name": "brnk — Free URL Shortener & QR Code Generator",
             "url": "https://brnk.in/",
-            "description": "Create custom short links, generate QR codes, set expiration dates, and track clicks for free with BRNK.",
+            "description": "Create custom short links, generate QR codes, set expiration dates, and track clicks for free with brnk.",
             "isPartOf": {
               "@type": "WebSite",
-              "name": "BRNK",
+              "name": "brnk",
               "url": "https://brnk.in/"
             }
           }
@@ -536,8 +536,8 @@ function Main() {
         {/* Left panel — branding + form */}
         <section className="left-panel" aria-label="URL shortener form">
           <header className="app-header">
-            <img src={logo} alt="BRNK logo" className="app-logo" />
-            <h1 className="title">BRNK</h1>
+            <img src={logo} alt="brnk logo" className="app-logo" />
+            <h1 className="title">brnk</h1>
           </header>
           <p className="subtitle">URLs on diet.</p>
           <form onSubmit={handleSubmit} className="form" aria-label="Shorten a URL">
@@ -653,13 +653,13 @@ function Main() {
         {/* Right panel — result / loader */}
         <section className="right-panel" aria-label="Shortened URL result">
           {isLoading ? (
-            mode === 'qrcode' ? <QRCodeLoader /> : <BRNKLoader />
+            mode === 'qrcode' ? <QRCodeLoader /> : <BrnkLoader />
           ) : shortenedUrl ? (
             mode === 'qrcode' ? (
               <div className="qr-result" aria-live="polite">
                 <h2 className="qr-result-label">Your QR Code:</h2>
                 <div className="qr-code-frame" ref={qrRef}>
-                  <span className="qr-corner-label qr-corner-tl">BRNK</span>
+                  <span className="qr-corner-label qr-corner-tl">brnk</span>
                   <span className="qr-corner-label qr-corner-tr">SCAN</span>
                   <NeoQRCode value={shortenedUrl} size={220} />
                   <span className="qr-corner-label qr-corner-bl">&#9632;&#9632;&#9632;</span>
@@ -733,7 +733,7 @@ function Main() {
                 <p className="empty-state-hint">{mode === 'qrcode' ? 'Paste a URL and hit Generate QR.' : 'Paste a long URL and hit Shorten.'}</p>
                 <div className="empty-deco-tags" aria-hidden="true">
                   <span className="empty-tag empty-tag-1">URL</span>
-                  <span className="empty-tag empty-tag-2">BRNK</span>
+                  <span className="empty-tag empty-tag-2">brnk</span>
                   <span className="empty-tag empty-tag-3">{'://'}</span>
                 </div>
               </div>
@@ -742,8 +742,8 @@ function Main() {
         </section>
       </main>
 
-      <section className="seo-content" aria-label="About BRNK URL Shortener">
-        <h2 className="seo-content-heading">Why Choose BRNK?</h2>
+      <section className="seo-content" aria-label="About brnk URL Shortener">
+        <h2 className="seo-content-heading">Why Choose brnk?</h2>
         <div className="seo-features">
           <div className="seo-feature">
             <h3>
@@ -786,7 +786,7 @@ function Main() {
 
       <footer className="site-footer">
         <div className="footer-content">
-          <p className="footer-brand">BRNK — Free URL Shortener &amp; QR Code Generator</p>
+          <p className="footer-brand">brnk — Free URL Shortener &amp; QR Code Generator</p>
           <nav className="footer-nav" aria-label="Footer navigation">
             <Link to="/">Shorten a URL</Link>
             <Link to="/track">Track Your Link</Link>

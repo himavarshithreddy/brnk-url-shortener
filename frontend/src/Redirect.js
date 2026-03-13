@@ -52,13 +52,13 @@ function RedirectPage() {
     return (
       <div className="app-container">
         <Helmet>
-          <title>Link Not Found | BRNK URL Shortener</title>
+          <title>Link Not Found | brnk URL Shortener</title>
           <meta name="robots" content="noindex, nofollow" />
         </Helmet>
         <main className="redirect-card" role="alert">
           <header className="app-header">
-            <img src={logo} alt="BRNK logo" className="app-logo" />
-            <h1 className="title">BRNK</h1>
+            <img src={logo} alt="brnk logo" className="app-logo" />
+            <h1 className="title">brnk</h1>
           </header>
           <p className="error-message">{error}</p>
         </main>
@@ -69,14 +69,14 @@ function RedirectPage() {
   return (
     <div className="app-container">
       <Helmet>
-        <title>Redirecting… | BRNK URL Shortener</title>
+        <title>Redirecting… | brnk URL Shortener</title>
         <meta name="robots" content="noindex, nofollow" />
-        <meta name="description" content="You are being redirected to your destination via BRNK URL Shortener." />
+        <meta name="description" content="You are being redirected to your destination via brnk URL Shortener." />
       </Helmet>
       <main className="redirect-card">
         <header className="app-header">
-          <img src={logo} alt="BRNK logo" className="app-logo" />
-          <h1 className="title">BRNK</h1>
+          <img src={logo} alt="brnk logo" className="app-logo" />
+          <h1 className="title">brnk</h1>
         </header>
         <p className="redirect-label">Redirecting you to</p>
         <div className="redirect-url-box">

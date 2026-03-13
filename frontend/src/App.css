@@ -1,5 +1,5 @@
 /* =========================================
-   NEO BRUTALISM — BRNK URL Shortener
+   NEO BRUTALISM — brnk URL Shortener
    ========================================= */
 
 /* Screen-reader only utility — visually hidden but accessible to assistive technology */
@@ -833,7 +833,7 @@ nav[aria-label="Site navigation"] {
 }
 
 /* ======================================================
-   BRNK LOADING ANIMATION
+   brnk LOADING ANIMATION
    Shown in the right panel while the API request is in flight.
    Not a full-screen overlay; lives entirely outside the form.
    ====================================================== */

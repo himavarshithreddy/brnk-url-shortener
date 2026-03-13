@@ -59,7 +59,7 @@ router.get('/track/:shortCode', generalLimiter, trackClicks);
 
 // Root route for backend service checks
 router.get('/', (req, res) => {
-  res.status(200).json({ message: 'BRNK backend is running.' });
+  res.status(200).json({ message: 'brnk backend is running.' });
 });
 
 // Route to get the original URL (catch-all, must be last)

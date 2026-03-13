@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Helmet } from 'react-helmet-async';
 import './App.css';
 import { Link } from 'react-router-dom';

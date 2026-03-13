@@ -6,12 +6,14 @@ describe('vercel routing', () => {
     const vercelConfigPath = path.resolve(__dirname, '../../vercel.json');
     const vercelConfig = JSON.parse(fs.readFileSync(vercelConfigPath, 'utf8'));
 
-    const backDomainRoute = vercelConfig.routes.find((route) =>
+    const backDomainRoute = vercelConfig.routes.find((route) => (
       route.src === '/(.*)' &&
       route.dest === '/backend/server.js' &&
       Array.isArray(route.has) &&
-      route.has.some((condition) => condition.type === 'host' && condition.value === 'back.brnk.in')
-    );
+      route.has.some(
+        (condition) => condition.type === 'host' && condition.value === 'back.brnk.in'
+      )
+    ));
 
     expect(backDomainRoute).toBeDefined();
   });

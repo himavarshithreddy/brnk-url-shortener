@@ -69,21 +69,28 @@ function TrackingPage() {
         <title>Track Your Short Link | BRNK URL Analytics &amp; Click Stats</title>
         <meta name="description" content="Track clicks and view analytics for your BRNK shortened URLs. Enter your short code to see click counts, creation date, and expiration details — completely free." />
         <meta name="keywords" content="link tracking, URL analytics, click tracking, short link stats, URL click counter, link performance, BRNK tracking, shortened URL analytics" />
-        <link rel="canonical" href="https://brnk.vercel.app/track" />
+        <meta name="author" content="BRNK" />
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+        <meta name="referrer" content="origin-when-cross-origin" />
+        <link rel="alternate" hrefLang="en" href="https://brnk.in/track" />
+        <link rel="alternate" hrefLang="x-default" href="https://brnk.in/track" />
+        <link rel="canonical" href="https://brnk.in/track" />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://brnk.vercel.app/track" />
+        <meta property="og:url" content="https://brnk.in/track" />
         <meta property="og:title" content="Track Your Short Link | BRNK URL Analytics & Click Stats" />
         <meta property="og:description" content="Track clicks and view analytics for your BRNK shortened URLs. Enter your short code to see click counts, creation date, and expiration details." />
         <meta property="og:site_name" content="BRNK" />
         <meta property="og:locale" content="en_US" />
-        <meta property="og:image" content="https://brnk.vercel.app/logo512.png" />
+        <meta property="og:image" content="https://brnk.in/logo512.png" />
         <meta property="og:image:width" content="512" />
         <meta property="og:image:height" content="512" />
+        <meta property="og:image:alt" content="BRNK URL analytics dashboard logo" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:url" content="https://brnk.vercel.app/track" />
+        <meta name="twitter:url" content="https://brnk.in/track" />
         <meta name="twitter:title" content="Track Your Short Link | BRNK URL Analytics & Click Stats" />
         <meta name="twitter:description" content="Track clicks and view analytics for your BRNK shortened URLs. Enter your short code to see click counts, creation date, and expiration details." />
-        <meta name="twitter:image" content="https://brnk.vercel.app/logo512.png" />
+        <meta name="twitter:image" content="https://brnk.in/logo512.png" />
+        <meta name="twitter:image:alt" content="BRNK URL analytics dashboard logo" />
         <script type="application/ld+json">{`
           {
             "@context": "https://schema.org",
@@ -93,15 +100,29 @@ function TrackingPage() {
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Home",
-                "item": "https://brnk.vercel.app/"
+                "item": "https://brnk.in/"
               },
               {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "Track Link",
-                "item": "https://brnk.vercel.app/track"
+                "item": "https://brnk.in/track"
               }
             ]
+          }
+        `}</script>
+        <script type="application/ld+json">{`
+          {
+            "@context": "https://schema.org",
+            "@type": "WebPage",
+            "name": "Track Your Short Link | BRNK",
+            "url": "https://brnk.in/track",
+            "description": "Track clicks and view analytics for BRNK shortened URLs.",
+            "isPartOf": {
+              "@type": "WebSite",
+              "name": "BRNK",
+              "url": "https://brnk.in/"
+            }
           }
         `}</script>
       </Helmet>

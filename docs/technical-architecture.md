@@ -1,6 +1,24 @@
 # BRNK Technical Architecture
 
-## 1) Technology stack
+## 1) Feature list (implementation-aligned)
+
+- URL shortening with optional custom short code
+- QR code generation with branded styling
+- Click tracking for short links
+- Optional TTL-based link expiration
+- Redirect behavior selection (`301`, `302`, `308`)
+- Security protections (rate limiting, URL safety checks, optional CAPTCHA and Safe Browsing)
+- Operational monitoring with killswitch and dashboard data
+
+## 2) Techniques used
+
+- Layered middleware pipeline for defense-in-depth on link creation
+- Multi-level caching for low-latency redirect lookups
+- Lazy loading on frontend for QR dependencies to keep initial bundle lean
+- Async/non-blocking analytics updates on redirect path
+- Input validation and constrained patterns for custom short codes and route params
+
+## 3) Technology stack
 
 ### Backend (`/backend`)
 - Node.js + Express
@@ -21,7 +39,7 @@
 - Vercel with separate backend and frontend builds
 - Routing orchestrated by root `vercel.json`
 
-## 2) Repository structure
+## 4) Architecture and repository structure
 
 - `/backend/server.js` — backend entry point and middleware ordering
 - `/backend/routes/linkRoutes.js` — API and redirect routes
@@ -34,7 +52,7 @@
 - `/frontend/src/Track.js` — click tracking UI
 - `/frontend/src/Redirect.js` — redirect resolution UI flow
 
-## 3) High-level request flows
+## 5) Backend architecture and technical implementation details
 
 ### A) Create short URL
 `POST /shorten`
@@ -71,7 +89,29 @@ Returns metadata including original URL, click count, and timestamps.
 - `GET /health` for service/Redis health
 - `GET /monitoring/dashboard` for live operational counters
 
-## 4) Data model (conceptual)
+## 6) Frontend architecture and technical implementation details
+
+- Home page handles both shortening and QR generation workflows
+- QR library is lazy-loaded to keep initial bundle smaller for link-shortening-first users
+- Track page can parse either a raw short code or a pasted short URL
+- Redirect page resolves short code and performs browser redirection
+- API host can be configured via environment variable in frontend runtime
+
+## 7) APIs in architecture context
+
+Core API routes are implemented under backend route/controller layers:
+
+- `GET /health`
+- `GET /`
+- `POST /shorten`
+- `GET /:shortCode`
+- `GET /track/:shortCode`
+- `GET /link-info/:shortCode`
+- `GET /monitoring/dashboard`
+
+Full request and response contracts are documented in [`api-reference.md`](./api-reference.md).
+
+## 8) Database and scheme/schema details
 
 Each short link stores:
 
@@ -85,7 +125,13 @@ Each short link stores:
 
 The redirect path uses normalized compact fields internally for speed.
 
-## 5) Caching strategy
+### Redis key scheme
+
+- `shortCode -> link payload` mapping for primary redirect resolution
+- Cached compact redirect records for hot path fetches
+- Counter/stat keys for click and operational monitoring data
+
+## 9) Caching strategy
 
 The backend uses a multi-level approach:
 
@@ -93,20 +139,13 @@ The backend uses a multi-level approach:
 - Redis as durable source of truth
 - lightweight header object reuse and code pre-generation to reduce allocation overhead
 
-## 6) Frontend architecture notes
-
-- Home page handles both shortening and QR generation workflows
-- QR library is lazy-loaded to keep initial bundle smaller for link-shortening-first users
-- Track page can parse either a raw short code or a pasted short URL
-- Redirect page resolves short code and performs browser redirection
-
-## 7) Observability and protection design
+## 10) Observability and protection design
 
 - Monitoring middleware tracks creation, redirect volume, and anomalies
 - Killswitch can block new shorten requests during abuse spikes
 - URL safety middleware blocks dangerous patterns and suspicious destinations
 
-## 8) Known implementation behavior
+## 11) Known implementation behavior
 
 - Backend root route `GET /` returns JSON service message
 - Frontend contains explicit routes for `/`, `/track`, and `/:shortCode`

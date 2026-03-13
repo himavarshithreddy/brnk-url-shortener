@@ -11,10 +11,16 @@ dotenv.config();
 
 const app = express();
 
-// Trust the first proxy (Vercel / load-balancer) so req.ip reflects the real client
 app.set('trust proxy', 1);
 
-// Security headers (XSS, HSTS, Content-Type sniffing, etc.)
+// ---------------------------------------------------------------------------
+// Middleware ordering is critical for performance.
+// The redirect path (GET /:shortCode) is the hottest endpoint. We structure
+// the middleware so that heavy processing (JSON body parsing, CORS preflight)
+// is only applied to routes that need it, while the redirect path stays lean.
+// ---------------------------------------------------------------------------
+
+// Security headers – lightweight, applied globally
 app.use(helmet());
 
 const corsOptions = {
@@ -23,17 +29,21 @@ const corsOptions = {
   allowedHeaders: ['Content-Type'],
 };
 
-// Handle preflight OPTIONS requests explicitly
 app.options('*', cors(corsOptions));
 app.use(cors(corsOptions));
 
-// Proxy detection – block requests with too many proxy hops
+// Proxy detection – lightweight IP extraction applied globally
 app.use(proxyDetection);
 
-// Middleware
-app.use(express.json({ limit: '10kb' }));
+// JSON body parsing – only needed for POST requests.
+// Splitting this out avoids parsing overhead on every redirect GET.
+app.use((req, res, next) => {
+  if (req.method === 'POST') {
+    return express.json({ limit: '10kb' })(req, res, next);
+  }
+  next();
+});
 
-// Serve favicon explicitly
 const faviconLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -44,7 +54,6 @@ app.get('/favicon.svg', faviconLimiter, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'favicon.svg'));
 });
 
-// Routes (no /api prefix so shortened URLs work at root level)
 app.use('/', linkRoutes);
 
 const PORT = process.env.PORT || 3001;
@@ -52,5 +61,4 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-// Export for Vercel serverless deployment
 module.exports = app;

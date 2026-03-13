@@ -5,9 +5,9 @@ import './App.css';
 import { Link } from 'react-router-dom';
 import logo from './logo.svg';
 
-const TICKER = 'FWSHK — PUTTING YOUR URL ON A DIET — HOLD TIGHT — TRIMMING THE FAT — ALMOST SKINNY — ';
+const TICKER = 'BRNK — PUTTING YOUR URL ON A DIET — HOLD TIGHT — TRIMMING THE FAT — ALMOST SKINNY — ';
 
-const QR_TICKER = 'FWSHK — GENERATING YOUR QR CODE — HOLD TIGHT — ENCODING PIXELS — ALMOST READY — ';
+const QR_TICKER = 'BRNK — GENERATING YOUR QR CODE — HOLD TIGHT — ENCODING PIXELS — ALMOST READY — ';
 const CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
 
 const QR_THEME = {
@@ -21,7 +21,7 @@ const QR_THEME = {
 };
 
 
-function FwshkLoader() {
+function BRNKLoader() {
   const scrambleRef = useRef(null);
   const [percent, setPercent] = useState(0);
 
@@ -44,7 +44,7 @@ function FwshkLoader() {
   }, []);
 
   return (
-    <div className="fwshk-loader" role="status" aria-label="Shortening your URL">
+    <div className="brnk-loader" role="status" aria-label="Shortening your URL">
       {/* CRT scanline overlay */}
       <div className="loader-scanlines" aria-hidden="true" />
 
@@ -130,7 +130,7 @@ function QRCodeLoader() {
   }, []);
 
   return (
-    <div className="fwshk-loader" role="status" aria-label="Generating your QR code">
+    <div className="brnk-loader" role="status" aria-label="Generating your QR code">
       <div className="loader-scanlines" aria-hidden="true" />
 
       <div className="loader-ticker">
@@ -428,8 +428,8 @@ function Main() {
       return lb + px + ctx.measureText(text).width + px + lb;
     };
 
-    // Top-left: FWSHK (orange)
-    drawLabel('FWSHK', fx - 4, fy - 12, '#ff6600', fontSize);
+    // Top-left: BRNK (orange)
+    drawLabel('BRNK', fx - 4, fy - 12, '#ff6600', fontSize);
 
     // Top-right: SCAN (cream)
     drawLabel('SCAN', fx + frameW + 4 - measureLabel('SCAN', fontSize), fy - 12, '#FFFDF7', fontSize);
@@ -451,7 +451,7 @@ function Main() {
     const branded = createBrandedQRCanvas(canvas);
     const url = branded.toDataURL('image/png');
     const link = document.createElement('a');
-    link.download = `fwshk-qr-${shortCode}.png`;
+    link.download = `brnk-qr-${shortCode}.png`;
     link.href = url;
     document.body.appendChild(link);
     link.click();
@@ -473,24 +473,24 @@ function Main() {
   return (
     <div className="app-container">
       <Helmet>
-        <title>Fwshk — Free URL Shortener &amp; QR Code Generator | Custom Short Links &amp; Click Tracking</title>
-        <meta name="description" content="Fwshk is a fast, free URL shortener and QR code generator. Create custom short links, generate QR codes, set expiration dates, choose redirect types, and track clicks — all with zero sign-up required." />
+        <title>BRNK — Free URL Shortener &amp; QR Code Generator | Custom Short Links &amp; Click Tracking</title>
+        <meta name="description" content="BRNK is a fast, free URL shortener and QR code generator. Create custom short links, generate QR codes, set expiration dates, choose redirect types, and track clicks — all with zero sign-up required." />
         <meta name="keywords" content="URL shortener, link shortener, short URL, custom short link, shorten URL, free URL shortener, click tracking, link analytics, short link generator, URL redirect, tiny URL, branded links, QR code generator, QR code maker, URL to QR code, link QR code" />
-        <link rel="canonical" href="https://fwshk.vercel.app/" />
+        <link rel="canonical" href="https://brnk.vercel.app/" />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://fwshk.vercel.app/" />
-        <meta property="og:title" content="Fwshk — Free URL Shortener & QR Code Generator | Custom Short Links & Click Tracking" />
+        <meta property="og:url" content="https://brnk.vercel.app/" />
+        <meta property="og:title" content="BRNK — Free URL Shortener & QR Code Generator | Custom Short Links & Click Tracking" />
         <meta property="og:description" content="Shorten any URL in seconds. Create custom short links, generate QR codes, set expiration dates, and track clicks — fast, free, and no sign-up required." />
-        <meta property="og:site_name" content="Fwshk" />
+        <meta property="og:site_name" content="BRNK" />
         <meta property="og:locale" content="en_US" />
-        <meta property="og:image" content="https://fwshk.vercel.app/logo512.png" />
+        <meta property="og:image" content="https://brnk.vercel.app/logo512.png" />
         <meta property="og:image:width" content="512" />
         <meta property="og:image:height" content="512" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:url" content="https://fwshk.vercel.app/" />
-        <meta name="twitter:title" content="Fwshk — Free URL Shortener & QR Code Generator | Custom Short Links & Click Tracking" />
+        <meta name="twitter:url" content="https://brnk.vercel.app/" />
+        <meta name="twitter:title" content="BRNK — Free URL Shortener & QR Code Generator | Custom Short Links & Click Tracking" />
         <meta name="twitter:description" content="Shorten any URL in seconds. Create custom short links, generate QR codes, set expiration dates, and track clicks — fast, free, and no sign-up required." />
-        <meta name="twitter:image" content="https://fwshk.vercel.app/logo512.png" />
+        <meta name="twitter:image" content="https://brnk.vercel.app/logo512.png" />
         <script type="application/ld+json">{`
           {
             "@context": "https://schema.org",
@@ -500,7 +500,7 @@ function Main() {
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Home",
-                "item": "https://fwshk.vercel.app/"
+                "item": "https://brnk.vercel.app/"
               }
             ]
           }
@@ -515,8 +515,8 @@ function Main() {
         {/* Left panel — branding + form */}
         <section className="left-panel" aria-label="URL shortener form">
           <header className="app-header">
-            <img src={logo} alt="Fwshk logo" className="app-logo" />
-            <h1 className="title">Fwshk</h1>
+            <img src={logo} alt="BRNK logo" className="app-logo" />
+            <h1 className="title">BRNK</h1>
           </header>
           <p className="subtitle">URLs on diet.</p>
           <form onSubmit={handleSubmit} className="form" aria-label="Shorten a URL">
@@ -632,13 +632,13 @@ function Main() {
         {/* Right panel — result / loader */}
         <section className="right-panel" aria-label="Shortened URL result">
           {isLoading ? (
-            mode === 'qrcode' ? <QRCodeLoader /> : <FwshkLoader />
+            mode === 'qrcode' ? <QRCodeLoader /> : <BRNKLoader />
           ) : shortenedUrl ? (
             mode === 'qrcode' ? (
               <div className="qr-result" aria-live="polite">
                 <h2 className="qr-result-label">Your QR Code:</h2>
                 <div className="qr-code-frame" ref={qrRef}>
-                  <span className="qr-corner-label qr-corner-tl">FWSHK</span>
+                  <span className="qr-corner-label qr-corner-tl">BRNK</span>
                   <span className="qr-corner-label qr-corner-tr">SCAN</span>
                   <NeoQRCode value={shortenedUrl} size={220} />
                   <span className="qr-corner-label qr-corner-bl">&#9632;&#9632;&#9632;</span>
@@ -712,7 +712,7 @@ function Main() {
                 <p className="empty-state-hint">{mode === 'qrcode' ? 'Paste a URL and hit Generate QR.' : 'Paste a long URL and hit Shorten.'}</p>
                 <div className="empty-deco-tags" aria-hidden="true">
                   <span className="empty-tag empty-tag-1">URL</span>
-                  <span className="empty-tag empty-tag-2">FWSHK</span>
+                  <span className="empty-tag empty-tag-2">BRNK</span>
                   <span className="empty-tag empty-tag-3">{'://'}</span>
                 </div>
               </div>
@@ -721,8 +721,8 @@ function Main() {
         </section>
       </main>
 
-      <section className="seo-content" aria-label="About Fwshk URL Shortener">
-        <h2 className="seo-content-heading">Why Choose Fwshk?</h2>
+      <section className="seo-content" aria-label="About BRNK URL Shortener">
+        <h2 className="seo-content-heading">Why Choose BRNK?</h2>
         <div className="seo-features">
           <div className="seo-feature">
             <h3>
@@ -765,7 +765,7 @@ function Main() {
 
       <footer className="site-footer">
         <div className="footer-content">
-          <p className="footer-brand">Fwshk — Free URL Shortener &amp; QR Code Generator</p>
+          <p className="footer-brand">BRNK — Free URL Shortener &amp; QR Code Generator</p>
           <nav className="footer-nav" aria-label="Footer navigation">
             <Link to="/">Shorten a URL</Link>
             <Link to="/track">Track Your Link</Link>

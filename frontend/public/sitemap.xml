@@ -12,12 +12,12 @@
 
   <!-- Homepage: URL shortener and QR code generator -->
   <url>
-    <loc>https://brnk.vercel.app/</loc>
+    <loc>https://brnk.in/</loc>
     <lastmod>2026-03-13</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
-      <image:loc>https://brnk.vercel.app/logo512.png</image:loc>
+      <image:loc>https://brnk.in/logo512.png</image:loc>
       <image:title>BRNK — Free URL Shortener &amp; QR Code Generator</image:title>
       <image:caption>Shorten URLs instantly, generate QR codes, set expiration dates, and track clicks — no sign-up required.</image:caption>
     </image:image>
@@ -25,12 +25,12 @@
 
   <!-- Track page: click analytics and link performance -->
   <url>
-    <loc>https://brnk.vercel.app/track</loc>
+    <loc>https://brnk.in/track</loc>
     <lastmod>2026-03-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://brnk.vercel.app/logo512.png</image:loc>
+      <image:loc>https://brnk.in/logo512.png</image:loc>
       <image:title>BRNK — Track Your Short Link Clicks &amp; Analytics</image:title>
       <image:caption>Enter your BRNK short code to view click analytics and track link performance.</image:caption>
     </image:image>

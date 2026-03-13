@@ -32,7 +32,7 @@ The docs in this folder explicitly cover:
 - **Architecture**: [`technical-architecture.md`](./technical-architecture.md)
 - **Techniques used**: [`technical-architecture.md`](./technical-architecture.md) (performance, caching, and abuse controls)
 - **Database**: [`technical-architecture.md`](./technical-architecture.md) (Redis model and keys)
-- **Scheme / Schema**: [`technical-architecture.md`](./technical-architecture.md) (data schema and Redis key scheme)
+- **Scheme** (schema/key structure): [`technical-architecture.md`](./technical-architecture.md) (data schema and Redis key scheme)
 - **Feature list**: [`non-technical-guide.md`](./non-technical-guide.md) + root [`README.md`](../README.md)
 - **Complete technical implementation details**: [`technical-architecture.md`](./technical-architecture.md), [`api-reference.md`](./api-reference.md), and [`security-and-abuse-prevention.md`](./security-and-abuse-prevention.md)
 

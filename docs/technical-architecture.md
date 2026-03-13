@@ -111,7 +111,7 @@ Core API routes are implemented under backend route/controller layers:
 
 Full request and response contracts are documented in [`api-reference.md`](./api-reference.md).
 
-## 8) Database and scheme/schema details
+## 8) Database schema and key structure (scheme)
 
 Each short link stores:
 

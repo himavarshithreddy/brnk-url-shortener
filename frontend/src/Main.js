@@ -476,21 +476,28 @@ function Main() {
         <title>BRNK — Free URL Shortener &amp; QR Code Generator | Custom Short Links &amp; Click Tracking</title>
         <meta name="description" content="BRNK is a fast, free URL shortener and QR code generator. Create custom short links, generate QR codes, set expiration dates, choose redirect types, and track clicks — all with zero sign-up required." />
         <meta name="keywords" content="URL shortener, link shortener, short URL, custom short link, shorten URL, free URL shortener, click tracking, link analytics, short link generator, URL redirect, tiny URL, branded links, QR code generator, QR code maker, URL to QR code, link QR code" />
-        <link rel="canonical" href="https://brnk.vercel.app/" />
+        <meta name="author" content="BRNK" />
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+        <meta name="referrer" content="origin-when-cross-origin" />
+        <link rel="alternate" hreflang="en" href="https://brnk.in/" />
+        <link rel="alternate" hreflang="x-default" href="https://brnk.in/" />
+        <link rel="canonical" href="https://brnk.in/" />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://brnk.vercel.app/" />
+        <meta property="og:url" content="https://brnk.in/" />
         <meta property="og:title" content="BRNK — Free URL Shortener & QR Code Generator | Custom Short Links & Click Tracking" />
         <meta property="og:description" content="Shorten any URL in seconds. Create custom short links, generate QR codes, set expiration dates, and track clicks — fast, free, and no sign-up required." />
         <meta property="og:site_name" content="BRNK" />
         <meta property="og:locale" content="en_US" />
-        <meta property="og:image" content="https://brnk.vercel.app/logo512.png" />
+        <meta property="og:image" content="https://brnk.in/logo512.png" />
         <meta property="og:image:width" content="512" />
         <meta property="og:image:height" content="512" />
+        <meta property="og:image:alt" content="BRNK URL shortener and QR code generator logo" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:url" content="https://brnk.vercel.app/" />
+        <meta name="twitter:url" content="https://brnk.in/" />
         <meta name="twitter:title" content="BRNK — Free URL Shortener & QR Code Generator | Custom Short Links & Click Tracking" />
         <meta name="twitter:description" content="Shorten any URL in seconds. Create custom short links, generate QR codes, set expiration dates, and track clicks — fast, free, and no sign-up required." />
-        <meta name="twitter:image" content="https://brnk.vercel.app/logo512.png" />
+        <meta name="twitter:image" content="https://brnk.in/logo512.png" />
+        <meta name="twitter:image:alt" content="BRNK URL shortener and QR code generator logo" />
         <script type="application/ld+json">{`
           {
             "@context": "https://schema.org",
@@ -500,9 +507,23 @@ function Main() {
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Home",
-                "item": "https://brnk.vercel.app/"
+                "item": "https://brnk.in/"
               }
             ]
+          }
+        `}</script>
+        <script type="application/ld+json">{`
+          {
+            "@context": "https://schema.org",
+            "@type": "WebPage",
+            "name": "BRNK — Free URL Shortener & QR Code Generator",
+            "url": "https://brnk.in/",
+            "description": "Create custom short links, generate QR codes, set expiration dates, and track clicks for free with BRNK.",
+            "isPartOf": {
+              "@type": "WebSite",
+              "name": "BRNK",
+              "url": "https://brnk.in/"
+            }
           }
         `}</script>
       </Helmet>

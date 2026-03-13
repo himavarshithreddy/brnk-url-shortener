@@ -26,6 +26,7 @@ describe('linkRoutes', () => {
       statusCode: null,
       body: '',
       status(code) { this.statusCode = code; return this; },
+      set() { return this; },
       type() { return this; },
       send(value) { this.body = value; return this; },
     };

@@ -61,6 +61,7 @@ router.get('/track/:shortCode', generalLimiter, trackClicks);
 router.get('/', (req, res) => {
   res
     .status(403)
+    .set('Content-Security-Policy', "default-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'")
     .type('html')
     .send(`<!doctype html>
 <html lang="en">
@@ -69,10 +70,10 @@ router.get('/', (req, res) => {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Access Restricted | BRNK</title>
 </head>
-<body style="font-family: Arial, sans-serif; margin: 0; min-height: 100vh; display: grid; place-items: center; background: #0b1220; color: #e5e7eb;">
-  <main style="text-align: center; max-width: 560px; padding: 24px;">
-    <h1 style="margin-bottom: 12px; color: #ffffff;">Access Restricted</h1>
-    <p style="margin: 0; line-height: 1.6;">This backend endpoint is not authorized for direct browsing. Please use <strong>BRNK.in</strong> to create and manage links.</p>
+<body>
+  <main>
+    <h1>Access Restricted</h1>
+    <p>This backend endpoint is not authorized for direct browsing. Please use <strong>brnk.in</strong> to create and manage links.</p>
   </main>
 </body>
 </html>`);

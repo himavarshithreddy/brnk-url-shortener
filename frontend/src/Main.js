@@ -475,7 +475,7 @@ function Main() {
       <Helmet>
         <title>BRNK — Free URL Shortener &amp; QR Code Generator | Custom Short Links &amp; Click Tracking</title>
         <meta name="description" content="BRNK is a fast, free URL shortener and QR code generator. Create custom short links, generate QR codes, set expiration dates, choose redirect types, and track clicks — all with zero sign-up required." />
-        <meta name="keywords" content="URL shortener, link shortener, short URL, custom short link, shorten URL, free URL shortener, click tracking, link analytics, short link generator, URL redirect, tiny URL, branded links, QR code generator, QR code maker, URL to QR code, link QR code" />
+        <meta name="keywords" content="URL shortener, link shortener, short URL, custom short link, shorten URL, free URL shortener, click tracking, link analytics, short link generator, URL redirect, tiny URL, branded links, QR code generator, QR code maker, URL to QR code, link QR code, shorten Google URL, shorten Microsoft URL, shorten Amazon URL, shorten Apple URL, shorten Meta URL, google.com short link, microsoft.com short link, amazon.com short link, apple.com short link, meta.com short link" />
         <link rel="canonical" href="https://brnk.vercel.app/" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://brnk.vercel.app/" />
@@ -547,7 +547,7 @@ function Main() {
               className="input"
               value={url}
               onChange={handleInputChange}
-              placeholder="Enter URL (e.g., google.com)"
+              placeholder="Enter URL (e.g., google.com, microsoft.com, apple.com)"
             />
 
             <fieldset className="shortcode-options">

@@ -39,4 +39,4 @@ Disallow: /asset-manifest.json
 Disallow: /manifest.json
 
 # ── Sitemap ───────────────────────────────────────────────────────────────────
-Sitemap: https://brnk.vercel.app/sitemap.xml
+Sitemap: https://brnk.in/sitemap.xml

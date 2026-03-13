@@ -163,7 +163,7 @@
             <span class="logo">BRNK</span>
             <div>
               <strong>XML Sitemap</strong>
-              <p>This sitemap is used by search engines to discover all public pages on <a href="https://brnk.vercel.app/">brnk.vercel.app</a>.</p>
+              <p>This sitemap is used by search engines to discover all public pages on <a href="https://brnk.in/">brnk.in</a>.</p>
             </div>
           </header>
 
@@ -174,7 +174,7 @@
             </div>
             <div>
               <span>Generated for</span>
-              <strong>brnk.vercel.app</strong>
+              <strong>brnk.in</strong>
             </div>
             <div>
               <span>Format</span>
@@ -229,7 +229,7 @@
 
           <footer>
             <p>
-              <a href="https://brnk.vercel.app/">BRNK</a> — Free URL Shortener &amp; QR Code Generator ·
+              <a href="https://brnk.in/">BRNK</a> — Free URL Shortener &amp; QR Code Generator ·
               <a href="https://www.sitemaps.org/protocol.html">Sitemaps protocol</a>
             </p>
           </footer>

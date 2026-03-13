@@ -9,7 +9,6 @@ This folder contains complete project documentation for both technical and non-t
 - **Developers and technical reviewers**
   - Start with [`technical-architecture.md`](./technical-architecture.md)
   - Then review [`api-reference.md`](./api-reference.md)
-  - Use [`setup-and-operations.md`](./setup-and-operations.md) for local setup and deployment details
   - Use [`security-and-abuse-prevention.md`](./security-and-abuse-prevention.md) for abuse controls and hardening
 
 ## Documentation Map
@@ -20,10 +19,22 @@ This folder contains complete project documentation for both technical and non-t
    - System architecture, codebase layout, core backend/frontend flows, and data model behavior.
 3. [`api-reference.md`](./api-reference.md)
    - HTTP endpoints, request/response behavior, status codes, and practical examples.
-4. [`setup-and-operations.md`](./setup-and-operations.md)
-   - Environment variables, local development, testing/build commands, deployment routing, and runbook notes.
-5. [`security-and-abuse-prevention.md`](./security-and-abuse-prevention.md)
+4. [`security-and-abuse-prevention.md`](./security-and-abuse-prevention.md)
    - Threat model, middleware protections, killswitch behavior, and security best practices.
+
+## Required technical coverage checklist
+
+The docs in this folder explicitly cover:
+
+- **APIs**: [`api-reference.md`](./api-reference.md)
+- **Frontend**: [`technical-architecture.md`](./technical-architecture.md) (frontend architecture and flows)
+- **Backend**: [`technical-architecture.md`](./technical-architecture.md) + [`security-and-abuse-prevention.md`](./security-and-abuse-prevention.md)
+- **Architecture**: [`technical-architecture.md`](./technical-architecture.md)
+- **Techniques used**: [`technical-architecture.md`](./technical-architecture.md) (performance, caching, and abuse controls)
+- **Database**: [`technical-architecture.md`](./technical-architecture.md) (Redis model and keys)
+- **Scheme** (schema/key structure): [`technical-architecture.md`](./technical-architecture.md) (data schema and Redis key scheme)
+- **Feature list**: [`non-technical-guide.md`](./non-technical-guide.md) + root [`README.md`](../README.md)
+- **Complete technical implementation details**: [`technical-architecture.md`](./technical-architecture.md), [`api-reference.md`](./api-reference.md), and [`security-and-abuse-prevention.md`](./security-and-abuse-prevention.md)
 
 ## Source of truth
 

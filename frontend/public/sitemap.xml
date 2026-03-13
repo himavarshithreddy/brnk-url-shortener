@@ -18,7 +18,7 @@
     <priority>1.0</priority>
     <image:image>
       <image:loc>https://brnk.in/logo512.png</image:loc>
-      <image:title>BRNK — Free URL Shortener &amp; QR Code Generator</image:title>
+      <image:title>brnk — Free URL Shortener &amp; QR Code Generator</image:title>
       <image:caption>Shorten URLs instantly, generate QR codes, set expiration dates, and track clicks — no sign-up required.</image:caption>
     </image:image>
   </url>
@@ -31,8 +31,8 @@
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://brnk.in/logo512.png</image:loc>
-      <image:title>BRNK — Track Your Short Link Clicks &amp; Analytics</image:title>
-      <image:caption>Enter your BRNK short code to view click analytics and track link performance.</image:caption>
+      <image:title>brnk — Track Your Short Link Clicks &amp; Analytics</image:title>
+      <image:caption>Enter your brnk short code to view click analytics and track link performance.</image:caption>
     </image:image>
   </url>
 

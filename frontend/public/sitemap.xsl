@@ -12,7 +12,7 @@
       <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>BRNK — XML Sitemap</title>
+        <title>brnk — XML Sitemap</title>
         <meta name="robots" content="noindex, follow" />
         <style>
           :root {
@@ -160,7 +160,7 @@
         <div class="container">
 
           <header>
-            <span class="logo">BRNK</span>
+            <span class="logo">brnk</span>
             <div>
               <strong>XML Sitemap</strong>
               <p>This sitemap is used by search engines to discover all public pages on <a href="https://brnk.in/">brnk.in</a>.</p>
@@ -229,7 +229,7 @@
 
           <footer>
             <p>
-              <a href="https://brnk.in/">BRNK</a> — Free URL Shortener &amp; QR Code Generator ·
+              <a href="https://brnk.in/">brnk</a> — Free URL Shortener &amp; QR Code Generator ·
               <a href="https://www.sitemaps.org/protocol.html">Sitemaps protocol</a>
             </p>
           </footer>

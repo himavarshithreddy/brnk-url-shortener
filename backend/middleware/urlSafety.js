@@ -12,6 +12,10 @@ const SHORTENER_DOMAINS = new Set([
   'buff.ly', 'adf.ly', 'bl.ink', 'lnkd.in', 'db.tt', 'qr.ae',
   'rebrand.ly', 'rb.gy', 'short.io', 'cutt.ly', 'shorturl.at',
   'tiny.cc', 'v.gd', 'vo.la', 'clck.ru', 'trib.al', 'su.pr',
+  // Additional shorteners to prevent multi-hop chaining
+  'x.co', 'snip.ly', 'soo.gd', 'shorte.st', 's.id', 'hyperurl.co',
+  'urlz.fr', 'u.to', 'shrtco.de', 'cli.re', 'bc.vc', 'han.gl',
+  'lc.chat', 'mcaf.ee', 'post.ly', 'tinu.be', 'za.gl',
 ]);
 
 // Suspicious TLDs often used in phishing/malware

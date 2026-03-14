@@ -639,7 +639,7 @@ nav[aria-label="Site navigation"] {
 .redirect-hint {
   font-size: 0.85rem;
   font-weight: 500;
-  color: #FFFDF7;
+  color: #ccc;
   letter-spacing: 0.04em;
 }
 

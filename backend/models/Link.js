@@ -231,6 +231,16 @@ async function getClickCount(shortCode) {
   return Number(clicks) || 0;
 }
 
+/**
+ * Atomically increment click count and return the new total.
+ * Used for maxClicks enforcement — bypasses the write buffer so the
+ * count is always accurate and the INCR + compare is race-condition-safe.
+ */
+async function atomicIncrClickCount(shortCode) {
+  if (!redis) throw new Error('Redis connection is not available');
+  return redis.incr(`${CLICKS_PREFIX}${shortCode}`);
+}
+
 // ---------------------------------------------------------------------------
 // Warm-up: resolve once, then skip the await on subsequent requests.
 // ---------------------------------------------------------------------------
@@ -257,6 +267,8 @@ module.exports = {
   getRedirectRecord,
   findByShortCode,
   incrementClickCount,
+  atomicIncrClickCount,
+  getClickCount,
   flushClickBuffer,
   checkRedisConnection,
   l1Delete,

@@ -22,6 +22,8 @@ jest.mock('../models/Link', () => ({
   findByShortCode: jest.fn(),
   getRedirectRecord: jest.fn(),
   incrementClickCount: jest.fn(),
+  atomicIncrClickCount: jest.fn(),
+  getClickCount: jest.fn(),
   checkRedisConnection: jest.fn(),
   ensureReady: jest.fn().mockResolvedValue(undefined),
   l1Delete: jest.fn(),
@@ -122,7 +124,7 @@ describe('createShortUrl — always creates a new independent link', () => {
 
     await createShortUrl(req, res);
 
-    expect(createLink).toHaveBeenCalledWith(expect.any(String), originalUrl, 3600, '308');
+    expect(createLink).toHaveBeenCalledWith(expect.any(String), originalUrl, 3600, '308', 0);
     expect(res.statusCode).toBe(200);
     expect(res.body.originalUrl).toBe(originalUrl);
   });
@@ -137,7 +139,7 @@ describe('createShortUrl — always creates a new independent link', () => {
 
     await createShortUrl(req, res);
 
-    expect(createLink).toHaveBeenCalledWith(expect.any(String), originalUrl, null, '301');
+    expect(createLink).toHaveBeenCalledWith(expect.any(String), originalUrl, null, '301', 0);
     expect(res.statusCode).toBe(200);
   });
 
@@ -151,7 +153,7 @@ describe('createShortUrl — always creates a new independent link', () => {
 
     await createShortUrl(req, res);
 
-    expect(createLink).toHaveBeenCalledWith(expect.any(String), originalUrl, null, '302');
+    expect(createLink).toHaveBeenCalledWith(expect.any(String), originalUrl, null, '302', 0);
     expect(res.statusCode).toBe(200);
   });
 
@@ -166,7 +168,7 @@ describe('createShortUrl — always creates a new independent link', () => {
 
     await createShortUrl(req, res);
 
-    expect(createLink).toHaveBeenCalledWith(customShortCode, originalUrl, null, expect.any(String));
+    expect(createLink).toHaveBeenCalledWith(customShortCode, originalUrl, null, expect.any(String), 0);
     expect(res.body.shortCode).toBe(customShortCode);
   });
 

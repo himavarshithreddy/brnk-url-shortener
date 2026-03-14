@@ -1,4 +1,4 @@
-const { createLink, getRedirectRecord, findByShortCode, incrementClickCount, checkRedisConnection, ensureReady } = require('../models/Link');
+const { createLink, getRedirectRecord, findByShortCode, findByOriginalUrl, incrementClickCount, checkRedisConnection, ensureReady } = require('../models/Link');
 const { customAlphabet } = require('nanoid');
 const { recordLinkCreation, recordRedirect, detectClickAnomaly, getDashboardData } = require('../middleware/monitoring');
 
@@ -81,9 +81,6 @@ const createShortUrl = async (req, res) => {
     ? String(redirectType)
     : '308';
 
-  // Use the pre-generated pool for random codes
-  const shortCode = customShortCode || getPooledCode();
-
   let ttlSeconds = null;
   if (ttl) {
     ttlSeconds = parseInt(ttl, 10);
@@ -97,7 +94,31 @@ const createShortUrl = async (req, res) => {
 
   try {
     await ensureReady();
-    const link = await createLink(shortCode, originalUrl, ttlSeconds, resolvedRedirectType);
+
+    // Idempotency: if no custom code, check if URL was already shortened
+    if (!customShortCode) {
+      const existing = await findByOriginalUrl(originalUrl);
+      if (existing) {
+        return res.json({
+          shortCode: existing.shortCode,
+          originalUrl: existing.originalUrl,
+          expiresAt: existing.expiresAt,
+        });
+      }
+    }
+
+    // For custom codes, attempt once; for random codes, retry on collision
+    const MAX_RETRIES = customShortCode ? 1 : 5;
+    let link = null;
+    let shortCode = customShortCode || getPooledCode();
+
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      link = await createLink(shortCode, originalUrl, ttlSeconds, resolvedRedirectType);
+      if (link) break;
+      if (customShortCode) break; // custom codes don't retry
+      shortCode = getPooledCode(); // generate a new random code and retry
+    }
+
     if (!link) {
       return res.status(400).json({ error: 'Shortcode already exists' });
     }
@@ -160,7 +181,7 @@ const getOriginalUrl = async (req, res) => {
     res.status(statusCode).end();
 
     // Fire-and-forget analytics after the response is sent
-    incrementClickCount(shortCode).catch(() => {});
+    incrementClickCount(shortCode);
     recordRedirect(shortCode);
 
     if (detectClickAnomaly(shortCode)) {

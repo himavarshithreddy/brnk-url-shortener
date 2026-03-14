@@ -13,6 +13,7 @@ try {
 
 const LINK_PREFIX = 'l:';
 const CLICKS_PREFIX = 'clicks:';
+const URL_INDEX_PREFIX = 'u:';
 
 // ---------------------------------------------------------------------------
 // L1 in-process memory cache – optimised with typed expiry slots
@@ -88,6 +89,10 @@ async function checkRedisConnection() {
  * Create a new shortened link in Redis.
  * Record fields: u (url), t (expiry epoch ms, 0=never), e (enabled), p (protected),
  *                r (redirect type as int), ca (createdAt ISO)
+ *
+ * Also maintains a reverse index (u:<url> -> shortCode) so that the same
+ * URL submitted without a custom code returns the existing mapping
+ * (idempotent creation).
  */
 async function createLink(shortCode, originalUrl, ttlSeconds = null, redirectType = '308') {
   if (!redis) throw new Error('Redis connection is not available');
@@ -116,10 +121,41 @@ async function createLink(shortCode, originalUrl, ttlSeconds = null, redirectTyp
   // Eagerly populate L1 cache so the first redirect is served from memory
   l1Set(shortCode, record);
 
+  // Maintain reverse URL index for idempotent creation
+  const urlKey = `${URL_INDEX_PREFIX}${originalUrl}`;
+  const urlSetOptions = ttlSeconds ? { ex: ttlSeconds } : {};
+  redis.set(urlKey, shortCode, urlSetOptions).catch((err) => {
+    console.error('Failed to set reverse URL index:', err.message);
+  });
+
   return {
     shortCode,
     originalUrl,
     expiresAt: expiresTimestamp ? new Date(expiresTimestamp).toISOString() : null,
+  };
+}
+
+/**
+ * Look up an existing short code for a URL via the reverse index.
+ * Returns { shortCode, originalUrl, expiresAt } if found and still valid, null otherwise.
+ */
+async function findByOriginalUrl(originalUrl) {
+  if (!redis) throw new Error('Redis connection is not available');
+
+  const urlKey = `${URL_INDEX_PREFIX}${originalUrl}`;
+  const existingCode = await redis.get(urlKey);
+  if (!existingCode) return null;
+
+  // Verify the link still exists and is valid
+  const record = await getRedirectRecord(existingCode);
+  if (!record) return null;
+  if (record.e !== 1) return null;
+  if (record.t > 0 && Date.now() > record.t) return null;
+
+  return {
+    shortCode: existingCode,
+    originalUrl: record.u,
+    expiresAt: record.t ? new Date(record.t).toISOString() : null,
   };
 }
 
@@ -171,12 +207,53 @@ async function findByShortCode(shortCode) {
   };
 }
 
+// ---------------------------------------------------------------------------
+// Click batching – reduces Redis write operations under high traffic.
+// Clicks are buffered in memory and flushed periodically or when the
+// buffer reaches a threshold.  This trades sub-second click accuracy
+// for significantly lower Redis write load at scale.
+// ---------------------------------------------------------------------------
+const clickBuffer = new Map();        // shortCode -> pending count
+const CLICK_FLUSH_INTERVAL_MS = 5_000;
+const CLICK_FLUSH_THRESHOLD = 50;     // flush a code early if it has this many pending
+const CLICK_BUFFER_MAX_SIZE = 10_000; // cap total entries to prevent memory exhaustion
+
+async function flushClickBuffer() {
+  if (!redis || clickBuffer.size === 0) return;
+  const batch = Array.from(clickBuffer.entries());
+  clickBuffer.clear();
+
+  const pipeline = redis.pipeline();
+  for (const [code, count] of batch) {
+    pipeline.incrby(`${CLICKS_PREFIX}${code}`, count);
+  }
+  try {
+    await pipeline.exec();
+  } catch (err) {
+    // On failure, put clicks back so they aren't lost
+    for (const [code, count] of batch) {
+      clickBuffer.set(code, (clickBuffer.get(code) || 0) + count);
+    }
+  }
+}
+
+const clickFlushTimer = setInterval(flushClickBuffer, CLICK_FLUSH_INTERVAL_MS);
+if (clickFlushTimer.unref) clickFlushTimer.unref();
+
 /**
- * Increment click count (fire-and-forget safe).
+ * Increment click count via the in-memory buffer (fire-and-forget safe).
+ * Clicks are batched and flushed to Redis periodically.
  */
-async function incrementClickCount(shortCode) {
-  if (!redis) return;
-  return redis.incr(`${CLICKS_PREFIX}${shortCode}`);
+function incrementClickCount(shortCode) {
+  // Drop clicks if buffer is at capacity (prevents memory exhaustion during Redis outage)
+  if (!clickBuffer.has(shortCode) && clickBuffer.size >= CLICK_BUFFER_MAX_SIZE) return;
+
+  const pending = (clickBuffer.get(shortCode) || 0) + 1;
+  clickBuffer.set(shortCode, pending);
+  // Flush eagerly for high-traffic codes to keep counts roughly accurate
+  if (pending >= CLICK_FLUSH_THRESHOLD) {
+    flushClickBuffer().catch(() => {});
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -204,7 +281,9 @@ module.exports = {
   createLink,
   getRedirectRecord,
   findByShortCode,
+  findByOriginalUrl,
   incrementClickCount,
+  flushClickBuffer,
   checkRedisConnection,
   l1Delete,
   warmupReady,

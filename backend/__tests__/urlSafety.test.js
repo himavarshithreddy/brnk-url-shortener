@@ -33,6 +33,13 @@ describe('isNestedShortener', () => {
     expect(isNestedShortener('http://cutt.ly/test')).toBe(true);
   });
 
+  test('detects newly added URL shorteners', () => {
+    expect(isNestedShortener('https://snip.ly/abc')).toBe(true);
+    expect(isNestedShortener('https://shorte.st/test')).toBe(true);
+    expect(isNestedShortener('https://s.id/xyz')).toBe(true);
+    expect(isNestedShortener('https://bc.vc/abc')).toBe(true);
+  });
+
   test('allows non-shortener domains', () => {
     expect(isNestedShortener('https://example.com')).toBe(false);
     expect(isNestedShortener('https://github.com/repo')).toBe(false);

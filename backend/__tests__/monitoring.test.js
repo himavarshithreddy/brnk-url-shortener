@@ -21,6 +21,11 @@ beforeEach(() => {
   _stats.killSwitchActive = false;
   _stats.killSwitchActivatedAt = 0;
   _stats.maliciousLinksWindow.length = 0;
+  // Reset global redirect throughput counters
+  _stats.totalRedirects.slots[0] = 0;
+  _stats.totalRedirects.slots[1] = 0;
+  _stats.redirectsPerHour.slots[0] = 0;
+  _stats.redirectsPerHour.slots[1] = 0;
 });
 
 describe('recordLinkCreation', () => {
@@ -124,6 +129,8 @@ describe('getDashboardData', () => {
 
     expect(data).toHaveProperty('linksCreatedLastMinute');
     expect(data).toHaveProperty('linksCreatedLastHour');
+    expect(data).toHaveProperty('redirectsLastMinute');
+    expect(data).toHaveProperty('redirectsLastHour');
     expect(data).toHaveProperty('topDomains');
     expect(data).toHaveProperty('topRedirects');
     expect(data).toHaveProperty('recentFlaggedLinks');
@@ -131,6 +138,16 @@ describe('getDashboardData', () => {
     expect(data).toHaveProperty('timestamp');
     expect(data.linksCreatedLastMinute).toBe(1);
     expect(data.topDomains.length).toBeGreaterThan(0);
+  });
+
+  test('tracks global redirect throughput', () => {
+    recordRedirect('a');
+    recordRedirect('b');
+    recordRedirect('a');
+
+    const data = getDashboardData();
+    expect(data.redirectsLastMinute).toBe(3);
+    expect(data.redirectsLastHour).toBe(3);
   });
 });
 

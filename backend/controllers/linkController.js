@@ -1,4 +1,4 @@
-const { createLink, getRedirectRecord, findByShortCode, incrementClickCount, checkRedisConnection, ensureReady } = require('../models/Link');
+const { createLink, getRedirectRecord, findByShortCode, incrementClickCount, atomicIncrClickCount, getClickCount, checkRedisConnection, ensureReady } = require('../models/Link');
 const { customAlphabet } = require('nanoid');
 const { recordLinkCreation, recordRedirect, detectClickAnomaly, getDashboardData } = require('../middleware/monitoring');
 
@@ -145,7 +145,7 @@ const createShortUrl = async (req, res) => {
     let shortCode = customShortCode || getPooledCode();
 
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-      link = await createLink(shortCode, originalUrl, ttlSeconds, resolvedRedirectType);
+      link = await createLink(shortCode, originalUrl, ttlSeconds, resolvedRedirectType, resolvedMaxClicks);
       if (link) break;
       if (customShortCode) break; // custom codes don't retry
       shortCode = getPooledCode(); // generate a new random code and retry
@@ -211,7 +211,7 @@ const getOriginalUrl = async (req, res) => {
 
     // maxClicks enforcement – check before redirecting
     if (record.mc > 0) {
-      const newCount = await incrementClickCount(shortCode);
+      const newCount = await atomicIncrClickCount(shortCode);
       if (newCount > record.mc) {
         return res.status(410).json({ error: 'Link has reached its maximum number of clicks' });
       }

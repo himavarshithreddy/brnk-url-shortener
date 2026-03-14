@@ -865,6 +865,210 @@ nav[aria-label="Site navigation"] {
   line-height: 1.5;
 }
 
+/* ---- Link History Section ---- */
+
+.history-section {
+  max-width: 620px;
+  width: 100%;
+  margin-top: 36px;
+}
+
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.history-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Syne', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #ff6600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.history-title-icon {
+  width: 22px;
+  height: 22px;
+  color: #ff6600;
+  flex-shrink: 0;
+}
+
+.history-clear-btn {
+  padding: 8px 16px;
+  border: 3px solid #ff4444;
+  border-radius: 0;
+  background-color: transparent;
+  color: #ff4444;
+  font-size: 0.75rem;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: background-color 0.1s ease, color 0.1s ease;
+}
+
+.history-clear-btn:hover {
+  background-color: #ff4444;
+  color: #000;
+}
+
+.history-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 3px solid #FFFDF7;
+  box-shadow: 5px 5px 0px #FFFDF7;
+}
+
+.history-item {
+  padding: 16px 18px;
+  background-color: #242424;
+  border-bottom: 2px solid #333;
+  transition: background-color 0.1s ease;
+}
+
+.history-item:last-child {
+  border-bottom: none;
+}
+
+.history-item:hover {
+  background-color: #2e2e2e;
+}
+
+.history-item-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.history-short-url {
+  color: #FFFDF7;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-decoration: none;
+  word-break: break-all;
+  flex: 1;
+  min-width: 0;
+}
+
+.history-short-url:hover {
+  color: #ffe500;
+}
+
+.history-item-actions {
+  display: flex;
+  gap: 0;
+  flex-shrink: 0;
+  border: 2px solid #FFFDF7;
+}
+
+.history-copy-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 0;
+  background-color: #FFFDF7;
+  color: #000;
+  font-size: 0.72rem;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+}
+
+.history-copy-btn:hover {
+  background-color: #ff6600;
+}
+
+.history-delete-btn {
+  padding: 6px 10px;
+  border: none;
+  border-left: 2px solid #333;
+  border-radius: 0;
+  background-color: #2e2e2e;
+  color: #9a9a9a;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.1s ease, color 0.1s ease;
+}
+
+.history-delete-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.history-delete-btn:hover {
+  background-color: #ff4444;
+  color: #000;
+}
+
+.history-original-url {
+  font-size: 0.8rem;
+  color: #666;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 8px;
+}
+
+.history-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.history-date {
+  font-size: 0.72rem;
+  color: #9a9a9a;
+  font-weight: 500;
+}
+
+.history-badge {
+  font-size: 0.62rem;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 2px 8px;
+  border: 2px solid;
+}
+
+.history-badge-qr {
+  border-color: #4fc3f7;
+  color: #4fc3f7;
+}
+
+.history-badge-sd {
+  border-color: #ff6600;
+  color: #ff6600;
+}
+
+.history-badge-pw {
+  border-color: #FFFDF7;
+  color: #FFFDF7;
+}
+
+.history-badge-exp {
+  border-color: #ffe500;
+  color: #ffe500;
+}
+
 /* ---- Responsive ---- */
 
 /* Desktop: two-column layout */
@@ -933,6 +1137,10 @@ nav[aria-label="Site navigation"] {
     flex-direction: column;
     gap: 16px;
     margin-bottom: 16px;
+  }
+
+  .history-section {
+    max-width: 1100px;
   }
 }
 
@@ -1901,6 +2109,26 @@ nav[aria-label="Site navigation"] {
 
   .base-url {
     font-size: 0.8rem;
+  }
+
+  .history-section {
+    margin-top: 28px;
+  }
+
+  .history-list {
+    box-shadow: 3px 3px 0px #FFFDF7;
+  }
+
+  .history-item {
+    padding: 14px 14px;
+  }
+
+  .history-item-top {
+    flex-wrap: wrap;
+  }
+
+  .history-title {
+    font-size: 0.95rem;
   }
 }
 

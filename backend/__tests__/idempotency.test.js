@@ -128,7 +128,7 @@ describe('createShortUrl — always creates a new independent link', () => {
 
     await createShortUrl(req, res);
 
-    expect(createLink).toHaveBeenCalledWith(expect.any(String), originalUrl, 3600, '308', 0, null, false);
+    expect(createLink).toHaveBeenCalledWith(expect.any(String), originalUrl, 3600, '308', 0, null);
     expect(res.statusCode).toBe(200);
     expect(res.body.originalUrl).toBe(originalUrl);
   });
@@ -143,7 +143,7 @@ describe('createShortUrl — always creates a new independent link', () => {
 
     await createShortUrl(req, res);
 
-    expect(createLink).toHaveBeenCalledWith(expect.any(String), originalUrl, null, '301', 0, null, false);
+    expect(createLink).toHaveBeenCalledWith(expect.any(String), originalUrl, null, '301', 0, null);
     expect(res.statusCode).toBe(200);
   });
 
@@ -157,7 +157,7 @@ describe('createShortUrl — always creates a new independent link', () => {
 
     await createShortUrl(req, res);
 
-    expect(createLink).toHaveBeenCalledWith(expect.any(String), originalUrl, null, '302', 0, null, false);
+    expect(createLink).toHaveBeenCalledWith(expect.any(String), originalUrl, null, '302', 0, null);
     expect(res.statusCode).toBe(200);
   });
 
@@ -172,7 +172,7 @@ describe('createShortUrl — always creates a new independent link', () => {
 
     await createShortUrl(req, res);
 
-    expect(createLink).toHaveBeenCalledWith(customShortCode, originalUrl, null, expect.any(String), 0, null, false);
+    expect(createLink).toHaveBeenCalledWith(customShortCode, originalUrl, null, expect.any(String), 0, null);
     expect(res.body.shortCode).toBe(customShortCode);
   });
 

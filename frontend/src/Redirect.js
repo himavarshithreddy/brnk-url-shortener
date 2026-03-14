@@ -216,7 +216,7 @@ function RedirectPage() {
             <span className="redirect-url">{destinationUrl}</span>
           </div>
           {expiryCountdown && (
-            <p className="redirect-hint">Link expires in: {expiryCountdown}</p>
+            <p className="redirect-expiry-info">Link expires in: {expiryCountdown}</p>
           )}
           <div className="warning-actions">
             <button
@@ -254,7 +254,7 @@ function RedirectPage() {
           <span className="redirect-url">{destinationUrl || '...'}</span>
         </div>
         {expiryCountdown && (
-          <p className="redirect-hint">Link expires in: {expiryCountdown}</p>
+          <p className="redirect-expiry-info">Link expires in: {expiryCountdown}</p>
         )}
         <div className="redirect-timer" aria-live="polite" aria-atomic="true">{countdown}</div>
         <p className="redirect-hint">You will be redirected automatically</p>

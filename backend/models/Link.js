@@ -94,7 +94,7 @@ async function checkRedisConnection() {
  * URL submitted without a custom code returns the existing mapping
  * (idempotent creation).
  */
-async function createLink(shortCode, originalUrl, ttlSeconds = null, redirectType = '308') {
+async function createLink(shortCode, originalUrl, ttlSeconds = null, redirectType = '308', maxClicks = 0) {
   if (!redis) throw new Error('Redis connection is not available');
   const key = `${LINK_PREFIX}${shortCode}`;
 
@@ -111,6 +111,7 @@ async function createLink(shortCode, originalUrl, ttlSeconds = null, redirectTyp
     p: 0,
     r: rInt,
     ca: new Date(now).toISOString(),
+    mc: Number(maxClicks) || 0,
   };
 
   const setOptions = ttlSeconds ? { nx: true, ex: ttlSeconds } : { nx: true };
@@ -204,6 +205,7 @@ async function findByShortCode(shortCode) {
     clickCount: Number(clicks) || 0,
     createdAt: record.ca || null,
     expiresAt: record.t ? new Date(record.t).toISOString() : null,
+    maxClicks: record.mc || 0,
   };
 }
 
@@ -254,6 +256,15 @@ function incrementClickCount(shortCode) {
   if (pending >= CLICK_FLUSH_THRESHOLD) {
     flushClickBuffer().catch(() => {});
   }
+}
+
+/**
+ * Get current click count for a short code.
+ */
+async function getClickCount(shortCode) {
+  if (!redis) return 0;
+  const clicks = await redis.get(`${CLICKS_PREFIX}${shortCode}`);
+  return Number(clicks) || 0;
 }
 
 // ---------------------------------------------------------------------------

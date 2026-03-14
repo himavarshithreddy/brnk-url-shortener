@@ -44,6 +44,41 @@ function getPooledCode() {
 const CACHE_HEADERS_PERMANENT = { 'Cache-Control': 'public, max-age=86400, immutable' };
 const CACHE_HEADERS_NOSTORE = { 'Cache-Control': 'no-store' };
 
+// Bot user-agent detection for link metadata unfurling (OG tags)
+const BOT_UA_RE = /Twitterbot|Slackbot|Discordbot|WhatsApp|facebookexternalhit|LinkedInBot|Googlebot|bingbot|TelegramBot|Applebot|Pinterestbot/i;
+
+/**
+ * Generate HTML with OpenGraph meta tags for bot crawlers.
+ */
+function generateOgHtml(originalUrl, shortCode) {
+  let domain;
+  try {
+    domain = new URL(originalUrl).hostname;
+  } catch {
+    domain = originalUrl;
+  }
+  // Escape HTML special characters to prevent XSS
+  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
+  const safeDomain = esc(domain);
+  const safeCode = esc(shortCode);
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>${safeDomain} — brnk short link</title>
+<meta property="og:title" content="${safeDomain}"/>
+<meta property="og:description" content="Shortened link via brnk — click to visit ${safeDomain}"/>
+<meta property="og:url" content="https://brnk.in/${safeCode}"/>
+<meta property="og:site_name" content="brnk"/>
+<meta property="og:type" content="website"/>
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="${safeDomain}"/>
+<meta name="twitter:description" content="Shortened link via brnk — click to visit ${safeDomain}"/>
+</head>
+<body></body>
+</html>`;
+}
+
 function isValidUrl(string) {
   try {
     const url = new URL(string);
@@ -54,7 +89,7 @@ function isValidUrl(string) {
 }
 
 const createShortUrl = async (req, res) => {
-  const { originalUrl, customShortCode, ttl, redirectType } = req.body;
+  const { originalUrl, customShortCode, ttl, redirectType, maxClicks } = req.body;
 
   if (!originalUrl || typeof originalUrl !== 'string') {
     return res.status(400).json({ error: 'Original URL is required' });
@@ -92,6 +127,15 @@ const createShortUrl = async (req, res) => {
     }
   }
 
+  // Validate maxClicks (0 = unlimited)
+  let resolvedMaxClicks = 0;
+  if (maxClicks !== undefined && maxClicks !== null && maxClicks !== '') {
+    resolvedMaxClicks = parseInt(maxClicks, 10);
+    if (isNaN(resolvedMaxClicks) || resolvedMaxClicks < 0) {
+      return res.status(400).json({ error: 'maxClicks must be a non-negative integer' });
+    }
+  }
+
   try {
     await ensureReady();
 
@@ -126,7 +170,7 @@ const createShortUrl = async (req, res) => {
     const clientIp = req.securityMeta?.clientIp || req.ip || 'unknown';
     recordLinkCreation(shortCode, originalUrl, clientIp);
 
-    res.json({ shortCode, originalUrl, expiresAt: link.expiresAt });
+    res.json({ shortCode, originalUrl, expiresAt: link.expiresAt, maxClicks: resolvedMaxClicks });
   } catch (err) {
     if (err.message === 'Redis connection is not available') {
       return res.status(503).json({ error: 'Service temporarily unavailable. Please try again later.' });
@@ -166,6 +210,40 @@ const getOriginalUrl = async (req, res) => {
 
     if (record.e !== 1) {
       return res.status(404).json({ error: 'Link not found' });
+    }
+
+    // Bot detection – return OG meta tags for link unfurling instead of redirect
+    const ua = req.headers['user-agent'] || '';
+    if (BOT_UA_RE.test(ua)) {
+      const html = generateOgHtml(record.u, shortCode);
+      res.set('Content-Type', 'text/html; charset=utf-8');
+      res.set(CACHE_HEADERS_NOSTORE);
+      return res.status(200).send(html);
+    }
+
+    // maxClicks enforcement – check before redirecting
+    if (record.mc > 0) {
+      const newCount = await incrementClickCount(shortCode);
+      if (newCount > record.mc) {
+        return res.status(410).json({ error: 'Link has reached its maximum number of clicks' });
+      }
+
+      // record.r is already an integer (normalised at cache/fetch time)
+      const statusCode = record.r || 308;
+      res.set('Location', record.u);
+      if (statusCode === 301 || statusCode === 308) {
+        res.set(CACHE_HEADERS_PERMANENT);
+      } else {
+        res.set(CACHE_HEADERS_NOSTORE);
+      }
+      res.status(statusCode).end();
+
+      // Fire-and-forget analytics (click already incremented above)
+      recordRedirect(shortCode);
+      if (detectClickAnomaly(shortCode)) {
+        console.warn(`[ANOMALY] Link ${shortCode} has anomalous click volume`);
+      }
+      return;
     }
 
     // record.r is already an integer (normalised at cache/fetch time)
@@ -240,7 +318,7 @@ const monitoringDashboard = async (req, res) => {
   res.json(getDashboardData());
 };
 
-// Link info controller (for interstitial page)
+// Link info controller (for interstitial/preview page)
 const getLinkInfo = async (req, res) => {
   const { shortCode } = req.params;
 
@@ -271,15 +349,29 @@ const getLinkInfo = async (req, res) => {
     const isNewLink = record.ca && (Date.now() - new Date(record.ca).getTime()) < 24 * 60 * 60 * 1000;
     const showWarning = trustScore < 50 || isNewLink;
 
+    // Fetch click count for the preview page
+    const clickCount = await getClickCount(shortCode);
+
+    let domain;
+    try {
+      domain = new URL(record.u).hostname;
+    } catch {
+      domain = record.u;
+    }
+
     res.json({
       originalUrl: record.u,
       shortCode,
+      domain,
       trustScore,
       showWarning,
       warningReason: showWarning
         ? (trustScore < 50 ? 'low_trust_domain' : 'newly_created')
         : null,
       createdAt: record.ca || null,
+      expiresAt: record.t ? new Date(record.t).toISOString() : null,
+      clickCount,
+      maxClicks: record.mc || 0,
     });
   } catch (err) {
     if (err.message === 'Redis connection is not available') {

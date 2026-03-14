@@ -8,6 +8,8 @@ function RedirectPage() {
   const { shortCode } = useParams();
   const [error, setError] = useState('');
   const [destinationUrl, setDestinationUrl] = useState('');
+  const [expiresAt, setExpiresAt] = useState(null);
+  const [expiryCountdown, setExpiryCountdown] = useState(null);
   const [countdown, setCountdown] = useState(3);
   const [showWarning, setShowWarning] = useState(false);
   const [warningReason, setWarningReason] = useState(null);
@@ -35,6 +37,7 @@ function RedirectPage() {
         return res.json();
       })
       .then((data) => {
+        setExpiresAt(data.expiresAt || null);
         if (data.passwordProtected) {
           setPasswordRequired(true);
           return;
@@ -49,6 +52,32 @@ function RedirectPage() {
         setError('Link not found');
       });
   }, [shortCode, apiUrl]);
+
+  useEffect(() => {
+    if (!expiresAt) {
+      setExpiryCountdown(null);
+      return;
+    }
+
+    const updateCountdown = () => {
+      const remaining = new Date(expiresAt).getTime() - Date.now();
+      if (remaining <= 0) {
+        setExpiryCountdown('Expired');
+        return;
+      }
+
+      const hours = Math.floor(remaining / 3_600_000);
+      const minutes = Math.floor((remaining % 3_600_000) / 60_000);
+      const seconds = Math.floor((remaining % 60_000) / 1_000);
+      setExpiryCountdown(
+        `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+      );
+    };
+
+    updateCountdown();
+    const timer = setInterval(updateCountdown, 1000);
+    return () => clearInterval(timer);
+  }, [expiresAt]);
 
   useEffect(() => {
     if (destinationUrl && !showWarning) {
@@ -186,6 +215,9 @@ function RedirectPage() {
           <div className="redirect-url-box">
             <span className="redirect-url">{destinationUrl}</span>
           </div>
+          {expiryCountdown && (
+            <p className="redirect-hint">Link expires in: {expiryCountdown}</p>
+          )}
           <div className="warning-actions">
             <button
               onClick={() => setUserConfirmed(true)}
@@ -221,6 +253,9 @@ function RedirectPage() {
         <div className="redirect-url-box">
           <span className="redirect-url">{destinationUrl || '...'}</span>
         </div>
+        {expiryCountdown && (
+          <p className="redirect-hint">Link expires in: {expiryCountdown}</p>
+        )}
         <div className="redirect-timer" aria-live="polite" aria-atomic="true">{countdown}</div>
         <p className="redirect-hint">You will be redirected automatically</p>
       </main>

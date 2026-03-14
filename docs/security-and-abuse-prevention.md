@@ -59,7 +59,7 @@ If Google Safe Browsing API key is configured, additional external verdicting is
 Even with URL safety checks, malicious links can potentially bypass filters. BRNK addresses this with:
 
 1. **Domain trust scoring**: Low-trust domains are rejected or flagged
-2. **Interstitial warning page**: The frontend Redirect page fetches `/link-info/:shortCode` before redirecting. If the link has a low trust score or was recently created, users see a warning with the full destination URL and must explicitly confirm before proceeding
+2. **Interstitial warning page**: The frontend Redirect page fetches `/link-info/:shortCode` before redirecting. If the link has a low trust score, users see a warning with the full destination URL and must explicitly confirm before proceeding
 3. **Cache headers**: Permanent redirects (301/308) include `Cache-Control: public, max-age=86400, immutable` so browsers cache the redirect destination, reducing repeated exposure to the redirect service
 4. **Backend-first redirects**: In production, Vercel routes `/:shortCode` directly to the backend, which returns HTTP redirect status codes without frontend involvement. The frontend interstitial is a fallback safety layer
 

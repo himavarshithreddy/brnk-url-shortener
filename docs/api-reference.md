@@ -149,7 +149,6 @@ Returns destination and trust/warning metadata. Used by the frontend Redirect pa
 
 **Warning conditions:**
 - `showWarning: true` when `trustScore < 50` (reason: `low_trust_domain`)
-- `showWarning: true` when link was created less than 24 hours ago (reason: `newly_created`)
 
 ---
 

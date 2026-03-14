@@ -387,8 +387,7 @@ const getLinkInfo = async (req, res) => {
     const trustScore = calculateDomainTrustScore(record.u);
 
     // Determine if interstitial warning is needed
-    const isNewLink = record.ca && (Date.now() - new Date(record.ca).getTime()) < 24 * 60 * 60 * 1000;
-    const showWarning = trustScore < 50 || isNewLink;
+    const showWarning = trustScore < 50;
 
     // Fetch click count for the preview page
     const clickCount = await getClickCount(shortCode);
@@ -407,7 +406,7 @@ const getLinkInfo = async (req, res) => {
       trustScore,
       showWarning,
       warningReason: showWarning
-        ? (trustScore < 50 ? 'low_trust_domain' : 'newly_created')
+        ? 'low_trust_domain'
         : null,
       createdAt: record.ca || null,
       expiresAt: record.t ? new Date(record.t).toISOString() : null,

@@ -521,17 +521,22 @@ nav[aria-label="Site navigation"] {
 }
 
 .ttl-options:hover {
-  background-color: #ff6600;
+  border-color: #aaa;
 }
 
 .ttl-options:hover .ttl-label {
-  background-color: #ff6600;
-  color: #000;
+  background-color: #2a2a2a;
+  color: #fff;
 }
 
 .ttl-options:hover .ttl-select {
-  background-color: #ff6600;
-  color: #000;
+  background-color: #3a3a3a;
+  color: #fff;
+}
+
+.ttl-select option {
+  background-color: #2e2e2e;
+  color: #FFFDF7;
 }
 
 .ttl-options:active {

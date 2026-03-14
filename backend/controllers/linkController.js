@@ -57,19 +57,23 @@ function generateOgHtml(originalUrl, shortCode) {
   } catch {
     domain = originalUrl;
   }
+  // Escape HTML special characters to prevent XSS
+  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const safeDomain = esc(domain);
+  const safeCode = esc(shortCode);
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<title>${domain} — brnk short link</title>
-<meta property="og:title" content="${domain}"/>
-<meta property="og:description" content="Shortened link via brnk — click to visit ${domain}"/>
-<meta property="og:url" content="https://brnk.in/${shortCode}"/>
+<title>${safeDomain} — brnk short link</title>
+<meta property="og:title" content="${safeDomain}"/>
+<meta property="og:description" content="Shortened link via brnk — click to visit ${safeDomain}"/>
+<meta property="og:url" content="https://brnk.in/${safeCode}"/>
 <meta property="og:site_name" content="brnk"/>
 <meta property="og:type" content="website"/>
 <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="${domain}"/>
-<meta name="twitter:description" content="Shortened link via brnk — click to visit ${domain}"/>
+<meta name="twitter:title" content="${safeDomain}"/>
+<meta name="twitter:description" content="Shortened link via brnk — click to visit ${safeDomain}"/>
 </head>
 <body></body>
 </html>`;

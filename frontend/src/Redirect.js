@@ -12,6 +12,10 @@ function RedirectPage() {
   const [showWarning, setShowWarning] = useState(false);
   const [warningReason, setWarningReason] = useState(null);
   const [userConfirmed, setUserConfirmed] = useState(false);
+  const [passwordRequired, setPasswordRequired] = useState(false);
+  const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
   const apiUrl = (process.env.REACT_APP_API_URL || window.location.origin).replace(/\/+$/, '');
 
   const doRedirect = useCallback(() => {
@@ -31,6 +35,10 @@ function RedirectPage() {
         return res.json();
       })
       .then((data) => {
+        if (data.passwordProtected) {
+          setPasswordRequired(true);
+          return;
+        }
         setDestinationUrl(data.originalUrl);
         if (data.showWarning) {
           setShowWarning(true);
@@ -59,6 +67,36 @@ function RedirectPage() {
     return () => clearTimeout(timer);
   }, [destinationUrl, showWarning, countdown]);
 
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    if (!password) {
+      setPasswordError('Please enter the password.');
+      return;
+    }
+    setIsVerifying(true);
+    setPasswordError('');
+    try {
+      const res = await fetch(`${apiUrl}/verify-password/${encodeURIComponent(shortCode)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+      const data = await res.json();
+      if (res.ok && data.verified) {
+        window.location.replace(data.originalUrl);
+      } else if (res.status === 410) {
+        setError(data.error || 'Link has expired or reached its click limit.');
+        setPasswordRequired(false);
+      } else {
+        setPasswordError(data.error || 'Incorrect password. Please try again.');
+      }
+    } catch {
+      setPasswordError('An error occurred. Please try again.');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
   if (error) {
     return (
       <div className="app-container">
@@ -72,6 +110,44 @@ function RedirectPage() {
             <h1 className="title">brnk</h1>
           </header>
           <p className="error-message">{error}</p>
+        </main>
+      </div>
+    );
+  }
+
+  if (passwordRequired) {
+    return (
+      <div className="app-container">
+        <Helmet>
+          <title>Password Required | brnk URL Shortener</title>
+          <meta name="robots" content="noindex, nofollow" />
+        </Helmet>
+        <main className="redirect-card">
+          <header className="app-header">
+            <img src={logo} alt="brnk logo" className="app-logo" />
+            <h1 className="title">brnk</h1>
+          </header>
+          <p className="redirect-label" style={{ marginBottom: '0.5rem' }}>🔒 This link is password protected</p>
+          <form onSubmit={handlePasswordSubmit} style={{ width: '100%', marginTop: '1rem' }}>
+            <label htmlFor="link-password" className="sr-only">Link password</label>
+            <input
+              id="link-password"
+              type="password"
+              className="input"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter password"
+              autoFocus
+              autoComplete="current-password"
+              style={{ marginBottom: '0.75rem' }}
+            />
+            {passwordError && (
+              <p className="error-message" role="alert" style={{ marginBottom: '0.75rem' }}>{passwordError}</p>
+            )}
+            <button type="submit" className="submit-btn" disabled={isVerifying}>
+              {isVerifying ? 'Verifying…' : 'Unlock →'}
+            </button>
+          </form>
         </main>
       </div>
     );

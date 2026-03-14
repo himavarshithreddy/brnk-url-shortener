@@ -169,6 +169,53 @@ function TrackingPage() {
                 <p><strong>Expires:</strong> {new Date(trackingData.expiresAt).toLocaleString()}</p>
               )}
             </div>
+
+            {/* Device Stats */}
+            {trackingData.deviceStats && Object.keys(trackingData.deviceStats).length > 0 && (
+              <div className="tracking-stats-section">
+                <h3 className="tracking-stats-heading">📱 Device Breakdown</h3>
+                <div className="tracking-stats-bars">
+                  {Object.entries(trackingData.deviceStats)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([device, count]) => {
+                      const pct = trackingData.clicks > 0 ? Math.round((count / trackingData.clicks) * 100) : 0;
+                      return (
+                        <div key={device} className="stat-bar-row">
+                          <span className="stat-bar-label">{device.charAt(0).toUpperCase() + device.slice(1)}</span>
+                          <div className="stat-bar-track">
+                            <div className="stat-bar-fill" style={{ width: `${pct}%` }} />
+                          </div>
+                          <span className="stat-bar-value">{count} ({pct}%)</span>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+            )}
+
+            {/* Geo Stats */}
+            {trackingData.geoStats && Object.keys(trackingData.geoStats).length > 0 && (
+              <div className="tracking-stats-section">
+                <h3 className="tracking-stats-heading">🌍 Top Countries</h3>
+                <div className="tracking-stats-bars">
+                  {Object.entries(trackingData.geoStats)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 10)
+                    .map(([country, count]) => {
+                      const pct = trackingData.clicks > 0 ? Math.round((count / trackingData.clicks) * 100) : 0;
+                      return (
+                        <div key={country} className="stat-bar-row">
+                          <span className="stat-bar-label">{country}</span>
+                          <div className="stat-bar-track">
+                            <div className="stat-bar-fill stat-bar-fill-geo" style={{ width: `${pct}%` }} />
+                          </div>
+                          <span className="stat-bar-value">{count} ({pct}%)</span>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+            )}
           </section>
         )}
       </main>

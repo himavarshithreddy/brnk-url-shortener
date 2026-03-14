@@ -1,4 +1,5 @@
-const { createLink, getRedirectRecord, findByShortCode, incrementClickCount, atomicIncrClickCount, getClickCount, checkRedisConnection, ensureReady } = require('../models/Link');
+const crypto = require('crypto');
+const { createLink, getRedirectRecord, findByShortCode, incrementClickCount, atomicIncrClickCount, getClickCount, checkRedisConnection, ensureReady, detectDeviceType, trackDeviceStat, trackGeoStat } = require('../models/Link');
 const { customAlphabet } = require('nanoid');
 const { recordLinkCreation, recordRedirect, detectClickAnomaly, getDashboardData } = require('../middleware/monitoring');
 
@@ -89,7 +90,7 @@ function isValidUrl(string) {
 }
 
 const createShortUrl = async (req, res) => {
-  const { originalUrl, customShortCode, ttl, redirectType, maxClicks } = req.body;
+  const { originalUrl, customShortCode, ttl, redirectType, maxClicks, password, selfDestruct } = req.body;
 
   if (!originalUrl || typeof originalUrl !== 'string') {
     return res.status(400).json({ error: 'Original URL is required' });
@@ -127,13 +128,25 @@ const createShortUrl = async (req, res) => {
     }
   }
 
-  // Validate maxClicks (0 = unlimited)
+  // Self-destruct: link is deleted after the first click (maxClicks=1 enforces this)
+  // If both selfDestruct and maxClicks are set, selfDestruct takes precedence.
   let resolvedMaxClicks = 0;
-  if (maxClicks !== undefined && maxClicks !== null && maxClicks !== '') {
+  if (selfDestruct) {
+    resolvedMaxClicks = 1;
+  } else if (maxClicks !== undefined && maxClicks !== null && maxClicks !== '') {
     resolvedMaxClicks = parseInt(maxClicks, 10);
     if (isNaN(resolvedMaxClicks) || resolvedMaxClicks < 0) {
       return res.status(400).json({ error: 'maxClicks must be a non-negative integer' });
     }
+  }
+
+  // Optional password protection
+  let passwordHash = null;
+  if (password) {
+    if (typeof password !== 'string' || password.length < 1 || password.length > 100) {
+      return res.status(400).json({ error: 'Password must be 1-100 characters' });
+    }
+    passwordHash = crypto.createHash('sha256').update(password).digest('hex');
   }
 
   try {
@@ -146,7 +159,7 @@ const createShortUrl = async (req, res) => {
     let shortCode = customShortCode || getPooledCode();
 
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-      link = await createLink(shortCode, originalUrl, ttlSeconds, resolvedRedirectType, resolvedMaxClicks);
+      link = await createLink(shortCode, originalUrl, ttlSeconds, resolvedRedirectType, resolvedMaxClicks, passwordHash);
       if (link) break;
       if (customShortCode) break; // custom codes don't retry
       shortCode = getPooledCode(); // generate a new random code and retry
@@ -159,7 +172,14 @@ const createShortUrl = async (req, res) => {
     const clientIp = req.securityMeta?.clientIp || req.ip || 'unknown';
     recordLinkCreation(shortCode, originalUrl, clientIp);
 
-    res.json({ shortCode, originalUrl, expiresAt: link.expiresAt, maxClicks: resolvedMaxClicks });
+    res.json({
+      shortCode,
+      originalUrl,
+      expiresAt: link.expiresAt,
+      maxClicks: resolvedMaxClicks,
+      selfDestruct: !!selfDestruct,
+      passwordProtected: !!passwordHash,
+    });
   } catch (err) {
     if (err.message === 'Redis connection is not available') {
       return res.status(503).json({ error: 'Service temporarily unavailable. Please try again later.' });
@@ -201,6 +221,12 @@ const getOriginalUrl = async (req, res) => {
       return res.status(404).json({ error: 'Link not found' });
     }
 
+    // Password-protected links must be accessed via the verify-password endpoint.
+    // Return a 401 so the frontend interstitial (Redirect.js) can prompt for the password.
+    if (record.pw) {
+      return res.status(401).json({ error: 'Password required', passwordRequired: true });
+    }
+
     // Bot detection – return OG meta tags for link unfurling instead of redirect.
     // Secondary Accept-header guard: real crawlers never negotiate application/xhtml+xml,
     // but browsers always do.  This prevents a spoofed UA (e.g. "Twitterbot") sent by a
@@ -238,6 +264,9 @@ const getOriginalUrl = async (req, res) => {
       if (detectClickAnomaly(shortCode)) {
         console.warn(`[ANOMALY] Link ${shortCode} has anomalous click volume`);
       }
+      trackDeviceStat(shortCode, detectDeviceType(ua)).catch(() => {});
+      const country = req.headers['x-vercel-ip-country'] || '';
+      if (country) trackGeoStat(shortCode, country).catch(() => {});
       return;
     }
 
@@ -260,6 +289,9 @@ const getOriginalUrl = async (req, res) => {
     if (detectClickAnomaly(shortCode)) {
       console.warn(`[ANOMALY] Link ${shortCode} has anomalous click volume`);
     }
+    trackDeviceStat(shortCode, detectDeviceType(ua)).catch(() => {});
+    const country = req.headers['x-vercel-ip-country'] || '';
+    if (country) trackGeoStat(shortCode, country).catch(() => {});
   } catch (err) {
     if (err.message === 'Redis connection is not available') {
       return res.status(503).json({ error: 'Service temporarily unavailable. Please try again later.' });
@@ -285,6 +317,8 @@ const trackClicks = async (req, res) => {
       clicks: link.clickCount,
       createdAt: link.createdAt,
       expiresAt: link.expiresAt,
+      deviceStats: link.deviceStats,
+      geoStats: link.geoStats,
     });
   } catch (err) {
     if (err.message === 'Redis connection is not available') {
@@ -337,6 +371,16 @@ const getLinkInfo = async (req, res) => {
       return res.status(404).json({ error: 'Link not found' });
     }
 
+    // For password-protected links, return minimal info (do not expose destination URL).
+    if (record.pw) {
+      return res.json({
+        shortCode,
+        passwordProtected: true,
+        expiresAt: record.t ? new Date(record.t).toISOString() : null,
+        maxClicks: record.mc || 0,
+      });
+    }
+
     const { calculateDomainTrustScore } = require('../middleware/urlSafety');
     const trustScore = calculateDomainTrustScore(record.u);
 
@@ -377,6 +421,61 @@ const getLinkInfo = async (req, res) => {
   }
 };
 
+// Password verification controller for password-protected links
+const verifyLinkPassword = async (req, res) => {
+  const { shortCode } = req.params;
+  const { password } = req.body;
+
+  if (!shortCode || !VALID_SHORT_CODE_RE.test(shortCode)) {
+    return res.status(404).json({ error: 'Link not found' });
+  }
+
+  if (!password || typeof password !== 'string') {
+    return res.status(400).json({ error: 'Password is required' });
+  }
+
+  try {
+    await ensureReady();
+    const record = await getRedirectRecord(shortCode);
+
+    if (!record) return res.status(404).json({ error: 'Link not found' });
+    if (record.t > 0 && Date.now() > record.t) return res.status(410).json({ error: 'Link has expired' });
+    if (record.e !== 1) return res.status(404).json({ error: 'Link not found' });
+    if (!record.pw) return res.status(400).json({ error: 'Link is not password protected' });
+
+    const hash = crypto.createHash('sha256').update(password).digest('hex');
+    if (hash !== record.pw) {
+      return res.status(401).json({ error: 'Incorrect password' });
+    }
+
+    // Enforce maxClicks before granting access
+    if (record.mc > 0) {
+      const newCount = await atomicIncrClickCount(shortCode);
+      if (newCount > record.mc) {
+        return res.status(410).json({ error: 'Link has reached its maximum number of clicks' });
+      }
+    } else {
+      incrementClickCount(shortCode);
+    }
+
+    recordRedirect(shortCode);
+
+    // Track device / geo stats for this verified access
+    const ua = req.headers['user-agent'] || '';
+    trackDeviceStat(shortCode, detectDeviceType(ua)).catch(() => {});
+    const country = req.headers['x-vercel-ip-country'] || '';
+    if (country) trackGeoStat(shortCode, country).catch(() => {});
+
+    res.json({ verified: true, originalUrl: record.u });
+  } catch (err) {
+    if (err.message === 'Redis connection is not available') {
+      return res.status(503).json({ error: 'Service temporarily unavailable. Please try again later.' });
+    }
+    console.error('Error verifying link password:', err.message);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
 module.exports = {
   createShortUrl,
   getOriginalUrl,
@@ -384,4 +483,5 @@ module.exports = {
   healthCheck,
   monitoringDashboard,
   getLinkInfo,
+  verifyLinkPassword,
 };

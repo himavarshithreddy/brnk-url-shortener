@@ -5,6 +5,7 @@ jest.mock('../controllers/linkController', () => ({
   healthCheck: jest.fn(),
   monitoringDashboard: jest.fn(),
   getLinkInfo: jest.fn(),
+  verifyLinkPassword: jest.fn(),
 }));
 
 const router = require('../routes/linkRoutes');
@@ -189,5 +190,26 @@ describe('vercel.json routing', () => {
     const previewRoute = vercelConfig.routes.find(r => r.src && r.src.includes('preview'));
     expect(previewRoute).toBeDefined();
     expect(previewRoute.dest).toBe('/frontend/build/index.html');
+  });
+
+  test('has verify-password route to backend', () => {
+    const vpRoute = vercelConfig.routes.find(r => r.src && r.src.includes('verify-password'));
+    expect(vpRoute).toBeDefined();
+    expect(vpRoute.dest).toBe('/backend/server.js');
+  });
+});
+
+describe('new feature routes', () => {
+  const router = require('../routes/linkRoutes');
+
+  function findRouteLayer(pathname, method) {
+    return router.stack.find(
+      (layer) => layer.route && layer.route.path === pathname && layer.route.methods[method]
+    );
+  }
+
+  test('verify-password route exists for POST /verify-password/:shortCode', () => {
+    const layer = findRouteLayer('/verify-password/:shortCode', 'post');
+    expect(layer).toBeDefined();
   });
 });

@@ -265,6 +265,9 @@ function Main() {
   const [ttl, setTtl] = useState('');
   const [redirectType, setRedirectType] = useState('308');
   const [maxClicks, setMaxClicks] = useState('');
+  const [selfDestruct, setSelfDestruct] = useState(false);
+  const [usePassword, setUsePassword] = useState(false);
+  const [password, setPassword] = useState('');
   const [mode, setMode] = useState('shorten');
   const qrRef = useRef(null);
   const apiUrl = (process.env.REACT_APP_API_URL || '').replace(/\/+$/, '');
@@ -289,6 +292,8 @@ function Main() {
   const [shortenedUrl, setShortenedUrl] = useState('');
   const [shortCode, setShortCode] = useState('');
   const [expiresAt, setExpiresAt] = useState('');
+  const [resultSelfDestruct, setResultSelfDestruct] = useState(false);
+  const [resultPasswordProtected, setResultPasswordProtected] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -362,7 +367,11 @@ function Main() {
           ...(useCustomCode && { customShortCode: customCode }),
           ...(ttl && { ttl: parseInt(ttl, 10) }),
           redirectType,
-          ...(maxClicks && { maxClicks: parseInt(maxClicks, 10) }),
+          // selfDestruct takes precedence over maxClicks (maps to maxClicks=1 on backend)
+          ...(selfDestruct
+            ? { selfDestruct: true }
+            : (maxClicks && { maxClicks: parseInt(maxClicks, 10) })),
+          ...(usePassword && password && { password }),
           ...(captchaToken && { captchaToken }),
         }),
       });
@@ -374,6 +383,8 @@ function Main() {
         setShortenedUrl(fullShortenedUrl);
         setShortCode(data.shortCode);
         setExpiresAt(data.expiresAt || '');
+        setResultSelfDestruct(!!data.selfDestruct);
+        setResultPasswordProtected(!!data.passwordProtected);
         setError('');
       } else {
         setError(data.error || 'Failed to shorten URL.');
@@ -680,8 +691,9 @@ function Main() {
                 <select
                   id="max-clicks-select"
                   className="ttl-select"
-                  value={maxClicks}
-                  onChange={(e) => setMaxClicks(e.target.value)}
+                  value={selfDestruct ? '1' : maxClicks}
+                  onChange={(e) => { setSelfDestruct(false); setMaxClicks(e.target.value); }}
+                  disabled={selfDestruct}
                 >
                   <option value="">Unlimited</option>
                   <option value="1">1 (One-Time)</option>
@@ -691,6 +703,45 @@ function Main() {
                 </select>
               </div>
             </div>
+
+            {/* Self-Destruct and Password Protection toggles */}
+            <div className="extra-options-row">
+              <button
+                type="button"
+                className={`extra-opt-btn${selfDestruct ? ' active' : ''}`}
+                onClick={() => setSelfDestruct(v => !v)}
+                aria-pressed={selfDestruct}
+                title="Link deletes itself after the first click"
+              >
+                🔥 Self Destruct
+              </button>
+
+              <button
+                type="button"
+                className={`extra-opt-btn${usePassword ? ' active' : ''}`}
+                onClick={() => { setUsePassword(v => !v); if (usePassword) setPassword(''); }}
+                aria-pressed={usePassword}
+                title="Protect this link with a password"
+              >
+                🔒 Password
+              </button>
+            </div>
+
+            {usePassword && (
+              <div className="password-field-row">
+                <label htmlFor="link-password-input" className="ttl-label">Link Password</label>
+                <input
+                  id="link-password-input"
+                  type="password"
+                  className="input password-input"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter password for this link"
+                  maxLength={100}
+                  autoComplete="new-password"
+                />
+              </div>
+            )}
 
             <button type="submit" className="submit-btn" disabled={isLoading}>
               {isLoading ? (mode === 'qrcode' ? 'Generating...' : 'Shortening...') : (mode === 'qrcode' ? 'Generate QR' : 'Shorten')}
@@ -734,6 +785,20 @@ function Main() {
             ) : (
               <div className="result" aria-live="polite">
                 <h2 className="shortened-text">Shortened URL:</h2>
+                {(resultSelfDestruct || resultPasswordProtected) && (
+                  <div className="result-badges">
+                    {resultSelfDestruct && (
+                      <span className="result-badge badge-self-destruct" title="This link can only be clicked once">
+                        🔥 Self Destruct
+                      </span>
+                    )}
+                    {resultPasswordProtected && (
+                      <span className="result-badge badge-password" title="This link is password protected">
+                        🔒 Password Protected
+                      </span>
+                    )}
+                  </div>
+                )}
                 <div className="shortened-url-container">
                   <a href={shortenedUrl} target="_blank" rel="noopener noreferrer" className="shortened-url">
                     {shortenedUrl}

@@ -5,6 +5,7 @@ jest.mock('../controllers/linkController', () => ({
   healthCheck: jest.fn(),
   monitoringDashboard: jest.fn(),
   getLinkInfo: jest.fn(),
+  verifyLinkPassword: jest.fn(),
 }));
 
 const router = require('../routes/linkRoutes');

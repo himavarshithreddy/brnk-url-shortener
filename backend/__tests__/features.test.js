@@ -64,6 +64,41 @@ describe('bot detection regex', () => {
   });
 });
 
+describe('bot detection Accept-header guard', () => {
+  // Replicates the combined UA + Accept logic used in getOriginalUrl()
+  const BOT_UA_RE = /Twitterbot|Slackbot|Discordbot|WhatsApp|facebookexternalhit|LinkedInBot|Googlebot|bingbot|TelegramBot|Applebot|Pinterestbot/i;
+
+  function shouldServeOgHtml(ua, accept) {
+    const isBotUa = BOT_UA_RE.test(ua);
+    const isBrowserAccept = /application\/xhtml\+xml/i.test(accept);
+    return isBotUa && !isBrowserAccept;
+  }
+
+  test('real bot UA with no Accept header → OG HTML', () => {
+    expect(shouldServeOgHtml('Twitterbot/1.0', '')).toBe(true);
+  });
+
+  test('real bot UA with crawler-style Accept → OG HTML', () => {
+    expect(shouldServeOgHtml('Slackbot-LinkExpanding 1.0', 'text/html')).toBe(true);
+    expect(shouldServeOgHtml('Discordbot/2.0', '*/*')).toBe(true);
+  });
+
+  test('spoofed bot UA with browser Accept header → redirect (not OG HTML)', () => {
+    const browserAccept =
+      'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8';
+    expect(shouldServeOgHtml('Twitterbot/1.0', browserAccept)).toBe(false);
+    expect(shouldServeOgHtml('Googlebot/2.1', browserAccept)).toBe(false);
+  });
+
+  test('normal browser UA → redirect regardless of Accept', () => {
+    const browserUa = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36';
+    const browserAccept =
+      'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8';
+    expect(shouldServeOgHtml(browserUa, browserAccept)).toBe(false);
+    expect(shouldServeOgHtml(browserUa, '')).toBe(false);
+  });
+});
+
 describe('OG HTML generation', () => {
   // Inline the function for testing since it's not exported
   function generateOgHtml(originalUrl, shortCode) {

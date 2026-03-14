@@ -201,8 +201,8 @@ body {
 }
 
 .submit-btn:hover {
-  box-shadow: 7px 7px 0px #FFFDF7;
-  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #FFFDF7;
+  transform: translate(-1px, -1px);
 }
 
 .submit-btn:active {
@@ -272,9 +272,9 @@ body {
 }
 
 .shortened-url:hover {
-  background-color: #ffe500;
-  color: #000;
-  text-decoration: none;
+  background-color: #3a3a3a;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .copy-btn {
@@ -296,8 +296,7 @@ body {
 }
 
 .copy-btn:hover {
-  background-color: #ff6600;
-  color: #000;
+  background-color: #e6e0d4;
 }
 
 .copy-btn:active {
@@ -338,7 +337,7 @@ body {
 }
 
 .option-btn:hover {
-  background-color: #333;
+  background-color: #2a2a2a;
   color: #FFFDF7;
 }
 
@@ -442,8 +441,8 @@ nav[aria-label="Site navigation"] {
 }
 
 .track-links-btn:hover {
-  box-shadow: 6px 6px 0px #FFFDF7;
-  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0px #FFFDF7;
+  transform: translate(-1px, -1px);
 }
 
 .track-links-btn:active {
@@ -468,8 +467,8 @@ nav[aria-label="Site navigation"] {
 }
 
 .go-to-shortener-btn:hover {
-  box-shadow: 6px 6px 0px #FFFDF7;
-  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0px #FFFDF7;
+  transform: translate(-1px, -1px);
 }
 
 .go-to-shortener-btn:active {
@@ -521,17 +520,15 @@ nav[aria-label="Site navigation"] {
 }
 
 .ttl-options:hover {
-  border-color: #aaa;
+  border-color: #888;
 }
 
 .ttl-options:hover .ttl-label {
-  background-color: #2a2a2a;
-  color: #fff;
+  color: #ddd;
 }
 
 .ttl-options:hover .ttl-select {
-  background-color: #3a3a3a;
-  color: #fff;
+  color: #ddd;
 }
 
 .ttl-select option {
@@ -718,8 +715,8 @@ nav[aria-label="Site navigation"] {
 
 .warning-btn-danger:hover,
 .warning-btn-safe:hover {
-  box-shadow: 7px 7px 0px #FFFDF7;
-  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #FFFDF7;
+  transform: translate(-1px, -1px);
 }
 
 .warning-btn-danger:active,
@@ -920,8 +917,7 @@ nav[aria-label="Site navigation"] {
 }
 
 .history-clear-btn:hover {
-  background-color: #ff4444;
-  color: #000;
+  background-color: rgba(255, 68, 68, 0.15);
 }
 
 .history-list {
@@ -947,7 +943,7 @@ nav[aria-label="Site navigation"] {
 }
 
 .history-item:hover {
-  background-color: #2e2e2e;
+  background-color: #2a2a2a;
 }
 
 .history-item-top {
@@ -968,7 +964,8 @@ nav[aria-label="Site navigation"] {
 }
 
 .history-short-url:hover {
-  color: #ffe500;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .history-item-actions {
@@ -994,7 +991,7 @@ nav[aria-label="Site navigation"] {
 }
 
 .history-copy-btn:hover {
-  background-color: #ff6600;
+  background-color: #e6e0d4;
 }
 
 .history-delete-btn {
@@ -1017,8 +1014,8 @@ nav[aria-label="Site navigation"] {
 }
 
 .history-delete-btn:hover {
-  background-color: #ff4444;
-  color: #000;
+  background-color: #3a3a3a;
+  color: #ff4444;
 }
 
 .history-original-url {
@@ -1822,7 +1819,7 @@ nav[aria-label="Site navigation"] {
 }
 
 .mode-btn:hover {
-  background-color: #333;
+  background-color: #2a2a2a;
   color: #FFFDF7;
 }
 
@@ -1952,8 +1949,8 @@ nav[aria-label="Site navigation"] {
 }
 
 .qr-shortened-url a:hover {
-  background-color: #ffe500;
-  color: #000;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .qr-actions {
@@ -1981,7 +1978,7 @@ nav[aria-label="Site navigation"] {
 }
 
 .qr-download-btn:hover {
-  background-color: #ffe500;
+  background-color: #e85d00;
 }
 
 .qr-download-btn:active {
@@ -2007,7 +2004,7 @@ nav[aria-label="Site navigation"] {
 }
 
 .qr-copy-btn:hover {
-  background-color: #ff6600;
+  background-color: #e6e0d4;
 }
 
 .qr-copy-btn:active {
@@ -2169,7 +2166,7 @@ nav[aria-label="Site navigation"] {
 }
 
 .extra-opt-btn:hover {
-  background-color: #333;
+  background-color: #2a2a2a;
   color: #FFFDF7;
 }
 

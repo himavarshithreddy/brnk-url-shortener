@@ -573,12 +573,22 @@ nav[aria-label="Site navigation"] {
 }
 
 .redirect-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   font-size: 1rem;
   font-weight: 700;
   color: #9a9a9a;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-bottom: 16px;
+}
+
+.redirect-pw-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
 }
 
 .redirect-url-box {
@@ -617,6 +627,74 @@ nav[aria-label="Site navigation"] {
   font-weight: 500;
   color: #666;
   letter-spacing: 0.04em;
+}
+
+/* ---- Warning Page ---- */
+
+.warning-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #ff6666;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 12px;
+}
+
+.warning-message {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #9a9a9a;
+  letter-spacing: 0.02em;
+  margin-bottom: 16px;
+}
+
+.warning-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.warning-btn-danger,
+.warning-btn-safe {
+  padding: 14px 20px;
+  border: 3px solid #FFFDF7;
+  border-radius: 0;
+  font-size: 0.875rem;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  box-shadow: 5px 5px 0px #FFFDF7;
+  transition: box-shadow 0.1s ease, transform 0.1s ease;
+}
+
+.warning-btn-danger {
+  background-color: #ff4444;
+  color: #000;
+}
+
+.warning-btn-safe {
+  background-color: #2ecc71;
+  color: #000;
+}
+
+.warning-btn-danger:hover,
+.warning-btn-safe:hover {
+  box-shadow: 7px 7px 0px #FFFDF7;
+  transform: translate(-2px, -2px);
+}
+
+.warning-btn-danger:active,
+.warning-btn-safe:active {
+  box-shadow: 2px 2px 0px #FFFDF7;
+  transform: translate(3px, 3px);
 }
 
 /* ---- Preview / Safety Page ---- */
@@ -1992,8 +2070,9 @@ nav[aria-label="Site navigation"] {
 
 .extra-options-row {
   display: flex;
-  gap: 8px;
+  gap: 0;
   margin-top: 8px;
+  border: 3px solid #FFFDF7;
 }
 
 .extra-opt-btn {
@@ -2002,28 +2081,31 @@ nav[aria-label="Site navigation"] {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 10px 14px;
-  border: 2px solid #2e2e2e;
-  background-color: #1a1a1a;
+  padding: 14px;
+  border: none;
+  background-color: #2e2e2e;
   cursor: pointer;
-  font-size: 0.8rem;
+  font-size: 0.875rem;
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 600;
   color: #9a9a9a;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  transition: background-color 0.1s ease, color 0.1s ease, border-color 0.1s ease;
+  transition: background-color 0.1s ease, color 0.1s ease;
+}
+
+.extra-opt-btn:first-child {
+  border-right: 2px solid #FFFDF7;
 }
 
 .extra-opt-btn:hover {
-  border-color: #FFFDF7;
+  background-color: #333;
   color: #FFFDF7;
 }
 
 .extra-opt-btn.active {
-  border-color: #ff6600;
-  background-color: rgba(255, 102, 0, 0.12);
-  color: #ff6600;
+  background-color: #ff6600;
+  color: #000;
   font-weight: 700;
 }
 
@@ -2061,12 +2143,12 @@ nav[aria-label="Site navigation"] {
   align-items: center;
   gap: 5px;
   padding: 4px 10px;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border: 2px solid;
+  letter-spacing: 0.12em;
+  border: 3px solid;
 }
 
 .badge-self-destruct {
@@ -2093,11 +2175,11 @@ nav[aria-label="Site navigation"] {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.9rem;
+  font-size: 0.7rem;
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.12em;
   color: #FFFDF7;
   margin: 0 0 0.75rem 0;
 }

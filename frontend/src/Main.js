@@ -264,6 +264,7 @@ function Main() {
   const [customCode, setCustomCode] = useState('');
   const [ttl, setTtl] = useState('');
   const [redirectType, setRedirectType] = useState('308');
+  const [maxClicks, setMaxClicks] = useState('');
   const [mode, setMode] = useState('shorten');
   const qrRef = useRef(null);
   const apiUrl = (process.env.REACT_APP_API_URL || '').replace(/\/+$/, '');
@@ -361,6 +362,7 @@ function Main() {
           ...(useCustomCode && { customShortCode: customCode }),
           ...(ttl && { ttl: parseInt(ttl, 10) }),
           redirectType,
+          ...(maxClicks && { maxClicks: parseInt(maxClicks, 10) }),
           ...(captchaToken && { captchaToken }),
         }),
       });
@@ -670,6 +672,22 @@ function Main() {
                 >
                   <option value="308">Permanent (308)</option>
                   <option value="302">Track Clicks (302)</option>
+                </select>
+              </div>
+
+              <div className="ttl-options">
+                <label className="ttl-label" htmlFor="max-clicks-select">Max Clicks</label>
+                <select
+                  id="max-clicks-select"
+                  className="ttl-select"
+                  value={maxClicks}
+                  onChange={(e) => setMaxClicks(e.target.value)}
+                >
+                  <option value="">Unlimited</option>
+                  <option value="1">1 (One-Time)</option>
+                  <option value="10">10</option>
+                  <option value="100">100</option>
+                  <option value="1000">1,000</option>
                 </select>
               </div>
             </div>

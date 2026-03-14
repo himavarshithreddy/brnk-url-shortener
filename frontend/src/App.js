@@ -5,12 +5,14 @@ import { Analytics } from '@vercel/analytics/react';
 import TrackingPage from './Track';
 import Main from './Main';
 import RedirectPage from './Redirect';
+import PreviewPage from './Preview';
 
 const App = () => {
   return (
     <Router>
       <Routes>
         <Route exact path="/track" element={<TrackingPage />} />
+        <Route path="/preview/:shortCode" element={<PreviewPage />} />
         <Route path='/' element={<Main/>}/>
         <Route path='/:shortCode' element={<RedirectPage />}/>
       </Routes>

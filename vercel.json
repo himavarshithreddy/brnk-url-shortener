@@ -22,6 +22,7 @@
       { "src": "/health", "dest": "/backend/server.js" },
       { "src": "/shorten", "dest": "/backend/server.js" },
       { "src": "/track/([^/]+)", "dest": "/backend/server.js" },
+      { "src": "/link-info/([^/]+)", "dest": "/backend/server.js" },
       { "src": "/static/(.*)", "dest": "/frontend/build/static/$1" },
       { "src": "/favicon\\.ico", "dest": "/frontend/build/favicon.ico" },
       { "src": "/favicon\\.svg", "dest": "/frontend/build/favicon.svg" },
@@ -32,6 +33,7 @@
       { "src": "/asset-manifest\\.json", "dest": "/frontend/build/asset-manifest.json" },
       { "src": "/logo([0-9]+)\\.png", "dest": "/frontend/build/logo$1.png" },
       { "src": "^/track$", "dest": "/frontend/build/index.html" },
+      { "src": "^/preview/([^/]+)$", "dest": "/frontend/build/index.html" },
       { "src": "^/$", "dest": "/frontend/build/index.html" },
       { "src": "/([a-zA-Z0-9_-]+)", "dest": "/backend/server.js" }
     ]

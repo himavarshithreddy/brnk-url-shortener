@@ -58,7 +58,7 @@ function generateOgHtml(originalUrl, shortCode) {
     domain = originalUrl;
   }
   // Escape HTML special characters to prevent XSS
-  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
   const safeDomain = esc(domain);
   const safeCode = esc(shortCode);
   return `<!DOCTYPE html>

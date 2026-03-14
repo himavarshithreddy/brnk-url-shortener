@@ -73,19 +73,22 @@ describe('OG HTML generation', () => {
     } catch {
       domain = originalUrl;
     }
+    const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
+    const safeDomain = esc(domain);
+    const safeCode = esc(shortCode);
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<title>${domain} — brnk short link</title>
-<meta property="og:title" content="${domain}"/>
-<meta property="og:description" content="Shortened link via brnk — click to visit ${domain}"/>
-<meta property="og:url" content="https://brnk.in/${shortCode}"/>
+<title>${safeDomain} — brnk short link</title>
+<meta property="og:title" content="${safeDomain}"/>
+<meta property="og:description" content="Shortened link via brnk — click to visit ${safeDomain}"/>
+<meta property="og:url" content="https://brnk.in/${safeCode}"/>
 <meta property="og:site_name" content="brnk"/>
 <meta property="og:type" content="website"/>
 <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="${domain}"/>
-<meta name="twitter:description" content="Shortened link via brnk — click to visit ${domain}"/>
+<meta name="twitter:title" content="${safeDomain}"/>
+<meta name="twitter:description" content="Shortened link via brnk — click to visit ${safeDomain}"/>
 </head>
 <body></body>
 </html>`;
@@ -104,6 +107,21 @@ describe('OG HTML generation', () => {
     const html = generateOgHtml('not-a-url', 'xyz');
     expect(html).toContain('not-a-url');
     expect(html).toContain('xyz');
+  });
+
+  test('escapes HTML special characters to prevent XSS', () => {
+    const html = generateOgHtml('<script>alert("xss")</script>', 'x<y');
+    expect(html).not.toContain('<script>');
+    expect(html).toContain('&lt;script&gt;');
+    expect(html).toContain('&quot;');
+    expect(html).not.toContain('x<y');
+    expect(html).toContain('x&lt;y');
+  });
+
+  test('escapes single quotes', () => {
+    const html = generateOgHtml("it's-a-test.com", 'abc');
+    expect(html).not.toContain("it's");
+    expect(html).toContain('it&#x27;s');
   });
 });
 

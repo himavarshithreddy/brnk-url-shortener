@@ -177,7 +177,7 @@ body {
 
 .input:focus {
   outline: none;
-  box-shadow: 4px 4px 0px #4fc3f7;
+  box-shadow: 4px 4px 0px #ff6600;
 }
 
 /* ---- Submit Button ---- */
@@ -1822,7 +1822,7 @@ nav[aria-label="Site navigation"] {
 }
 
 .mode-btn.active {
-  background-color: #4fc3f7;
+  background-color: #ff6600;
   color: #000;
   font-weight: 700;
 }
@@ -2169,7 +2169,7 @@ nav[aria-label="Site navigation"] {
 }
 
 .extra-opt-btn.active {
-  background-color: #4fc3f7;
+  background-color: #ff6600;
   color: #000;
   font-weight: 700;
 }

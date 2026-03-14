@@ -169,6 +169,67 @@ function TrackingPage() {
                 <p><strong>Expires:</strong> {new Date(trackingData.expiresAt).toLocaleString()}</p>
               )}
             </div>
+
+            {/* Device Stats */}
+            {trackingData.deviceStats && Object.keys(trackingData.deviceStats).length > 0 && (
+              <div className="tracking-stats-section">
+                <h3 className="tracking-stats-heading">
+                  <svg className="stat-heading-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                    <line x1="8" y1="21" x2="16" y2="21"/>
+                    <line x1="12" y1="17" x2="12" y2="21"/>
+                  </svg>
+                  Device Breakdown
+                </h3>
+                <div className="tracking-stats-bars">
+                  {Object.entries(trackingData.deviceStats)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([device, count]) => {
+                      const pct = trackingData.clicks > 0 ? Math.round((count / trackingData.clicks) * 100) : 0;
+                      return (
+                        <div key={device} className="stat-bar-row">
+                          <span className="stat-bar-label">{device.charAt(0).toUpperCase() + device.slice(1)}</span>
+                          <div className="stat-bar-track">
+                            <div className="stat-bar-fill" style={{ width: `${pct}%` }} />
+                          </div>
+                          <span className="stat-bar-value">{count} ({pct}%)</span>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+            )}
+
+            {/* Geo Stats */}
+            {trackingData.geoStats && Object.keys(trackingData.geoStats).length > 0 && (
+              <div className="tracking-stats-section">
+                <h3 className="tracking-stats-heading">
+                  <svg className="stat-heading-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="2" y1="12" x2="22" y2="12"/>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                  </svg>
+                  Top Countries
+                </h3>
+                <div className="tracking-stats-bars">
+                  {Object.entries(trackingData.geoStats)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 10)
+                    .map(([country, count]) => {
+                      const pct = trackingData.clicks > 0 ? Math.round((count / trackingData.clicks) * 100) : 0;
+                      return (
+                        <div key={country} className="stat-bar-row">
+                          <span className="stat-bar-label">{country}</span>
+                          <div className="stat-bar-track">
+                            <div className="stat-bar-fill stat-bar-fill-geo" style={{ width: `${pct}%` }} />
+                          </div>
+                          <span className="stat-bar-value">{count} ({pct}%)</span>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+            )}
           </section>
         )}
       </main>

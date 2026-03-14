@@ -22,6 +22,7 @@
       { "src": "/health", "dest": "/backend/server.js" },
       { "src": "/shorten", "dest": "/backend/server.js" },
       { "src": "/track/([^/]+)", "dest": "/backend/server.js" },
+      { "src": "/verify-password/([^/]+)", "dest": "/backend/server.js" },
       { "src": "/link-info/([^/]+)", "dest": "/backend/server.js" },
       { "src": "/static/(.*)", "dest": "/frontend/build/static/$1" },
       { "src": "/favicon\\.ico", "dest": "/frontend/build/favicon.ico" },

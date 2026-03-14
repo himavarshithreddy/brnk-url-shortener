@@ -29,6 +29,10 @@ jest.mock('../models/Link', () => ({
   l1Delete: jest.fn(),
   warmupReady: Promise.resolve(),
   flushClickBuffer: jest.fn(),
+  detectDeviceType: jest.fn().mockReturnValue('desktop'),
+  trackDeviceStat: jest.fn().mockResolvedValue(undefined),
+  trackGeoStat: jest.fn().mockResolvedValue(undefined),
+  deleteLink: jest.fn().mockResolvedValue(undefined),
 }));
 
 // Mock monitoring middleware to avoid side-effects
@@ -124,7 +128,7 @@ describe('createShortUrl — always creates a new independent link', () => {
 
     await createShortUrl(req, res);
 
-    expect(createLink).toHaveBeenCalledWith(expect.any(String), originalUrl, 3600, '308', 0);
+    expect(createLink).toHaveBeenCalledWith(expect.any(String), originalUrl, 3600, '308', 0, null);
     expect(res.statusCode).toBe(200);
     expect(res.body.originalUrl).toBe(originalUrl);
   });
@@ -139,7 +143,7 @@ describe('createShortUrl — always creates a new independent link', () => {
 
     await createShortUrl(req, res);
 
-    expect(createLink).toHaveBeenCalledWith(expect.any(String), originalUrl, null, '301', 0);
+    expect(createLink).toHaveBeenCalledWith(expect.any(String), originalUrl, null, '301', 0, null);
     expect(res.statusCode).toBe(200);
   });
 
@@ -153,7 +157,7 @@ describe('createShortUrl — always creates a new independent link', () => {
 
     await createShortUrl(req, res);
 
-    expect(createLink).toHaveBeenCalledWith(expect.any(String), originalUrl, null, '302', 0);
+    expect(createLink).toHaveBeenCalledWith(expect.any(String), originalUrl, null, '302', 0, null);
     expect(res.statusCode).toBe(200);
   });
 
@@ -168,7 +172,7 @@ describe('createShortUrl — always creates a new independent link', () => {
 
     await createShortUrl(req, res);
 
-    expect(createLink).toHaveBeenCalledWith(customShortCode, originalUrl, null, expect.any(String), 0);
+    expect(createLink).toHaveBeenCalledWith(customShortCode, originalUrl, null, expect.any(String), 0, null);
     expect(res.body.shortCode).toBe(customShortCode);
   });
 

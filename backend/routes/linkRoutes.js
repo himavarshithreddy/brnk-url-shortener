@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const rateLimit = require('express-rate-limit');
-const { createShortUrl, getOriginalUrl, trackClicks, healthCheck, monitoringDashboard, getLinkInfo } = require('../controllers/linkController');
+const { createShortUrl, getOriginalUrl, trackClicks, healthCheck, monitoringDashboard, getLinkInfo, verifyLinkPassword } = require('../controllers/linkController');
 const { rateLimitKeyGenerator } = require('../middleware/security');
 const { creationRateLimiter } = require('../middleware/rateLimiter');
 const { urlSafetyCheck, googleSafeBrowsingCheck } = require('../middleware/urlSafety');
@@ -56,6 +56,9 @@ router.post('/shorten',
 
 // Route to track clicks (must be before the catch-all /:shortCode route)
 router.get('/track/:shortCode', generalLimiter, trackClicks);
+
+// Route to verify password for password-protected links
+router.post('/verify-password/:shortCode', generalLimiter, verifyLinkPassword);
 
 // Root route for backend service checks
 router.get('/', (req, res) => {

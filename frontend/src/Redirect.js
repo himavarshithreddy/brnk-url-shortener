@@ -12,6 +12,10 @@ function RedirectPage() {
   const [showWarning, setShowWarning] = useState(false);
   const [warningReason, setWarningReason] = useState(null);
   const [userConfirmed, setUserConfirmed] = useState(false);
+  const [passwordRequired, setPasswordRequired] = useState(false);
+  const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
   const apiUrl = (process.env.REACT_APP_API_URL || window.location.origin).replace(/\/+$/, '');
 
   const doRedirect = useCallback(() => {
@@ -31,6 +35,10 @@ function RedirectPage() {
         return res.json();
       })
       .then((data) => {
+        if (data.passwordProtected) {
+          setPasswordRequired(true);
+          return;
+        }
         setDestinationUrl(data.originalUrl);
         if (data.showWarning) {
           setShowWarning(true);
@@ -59,6 +67,36 @@ function RedirectPage() {
     return () => clearTimeout(timer);
   }, [destinationUrl, showWarning, countdown]);
 
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    if (!password) {
+      setPasswordError('Please enter the password.');
+      return;
+    }
+    setIsVerifying(true);
+    setPasswordError('');
+    try {
+      const res = await fetch(`${apiUrl}/verify-password/${encodeURIComponent(shortCode)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+      const data = await res.json();
+      if (res.ok && data.verified) {
+        window.location.replace(data.originalUrl);
+      } else if (res.status === 410) {
+        setError(data.error || 'Link has expired or reached its click limit.');
+        setPasswordRequired(false);
+      } else {
+        setPasswordError(data.error || 'Incorrect password. Please try again.');
+      }
+    } catch {
+      setPasswordError('An error occurred. Please try again.');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
   if (error) {
     return (
       <div className="app-container">
@@ -77,6 +115,49 @@ function RedirectPage() {
     );
   }
 
+  if (passwordRequired) {
+    return (
+      <div className="app-container">
+        <Helmet>
+          <title>Password Required | brnk URL Shortener</title>
+          <meta name="robots" content="noindex, nofollow" />
+        </Helmet>
+        <main className="redirect-card">
+          <header className="app-header">
+            <img src={logo} alt="brnk logo" className="app-logo" />
+            <h1 className="title">brnk</h1>
+          </header>
+          <p className="redirect-label">
+            <svg className="redirect-pw-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            This link is password protected
+          </p>
+          <form onSubmit={handlePasswordSubmit}>
+            <label htmlFor="link-password" className="sr-only">Link password</label>
+            <input
+              id="link-password"
+              type="password"
+              className="input"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter password"
+              autoFocus
+              autoComplete="current-password"
+            />
+            {passwordError && (
+              <p className="error-message" role="alert">{passwordError}</p>
+            )}
+            <button type="submit" className="submit-btn" disabled={isVerifying}>
+              {isVerifying ? 'Verifying…' : 'Unlock →'}
+            </button>
+          </form>
+        </main>
+      </div>
+    );
+  }
+
   if (showWarning && !userConfirmed) {
     return (
       <div className="app-container">
@@ -89,10 +170,15 @@ function RedirectPage() {
             <img src={logo} alt="brnk logo" className="app-logo" />
             <h1 className="title">brnk</h1>
           </header>
-          <p className="warning-label" style={{ color: '#e74c3c', fontWeight: 'bold', fontSize: '1.1rem', marginBottom: '0.5rem' }}>
-            ⚠️ Warning
+          <p className="warning-label">
+            <svg className="redirect-pw-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            Warning
           </p>
-          <p className="warning-message" style={{ marginBottom: '1rem' }}>
+          <p className="warning-message">
             {warningReason === 'low_trust_domain'
               ? 'This link points to a domain with a low trust score. It may be unsafe.'
               : 'This is a newly created link. Exercise caution before proceeding.'}
@@ -100,32 +186,16 @@ function RedirectPage() {
           <div className="redirect-url-box">
             <span className="redirect-url">{destinationUrl}</span>
           </div>
-          <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+          <div className="warning-actions">
             <button
               onClick={() => setUserConfirmed(true)}
-              style={{
-                padding: '0.6rem 1.5rem',
-                background: '#e74c3c',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-              }}
+              className="warning-btn-danger"
             >
               Continue anyway
             </button>
             <button
               onClick={() => { window.location.href = '/'; }}
-              style={{
-                padding: '0.6rem 1.5rem',
-                background: '#2ecc71',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-              }}
+              className="warning-btn-safe"
             >
               Go back to safety
             </button>

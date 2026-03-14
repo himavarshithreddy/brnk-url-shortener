@@ -13,6 +13,8 @@ try {
 
 const LINK_PREFIX = 'l:';
 const CLICKS_PREFIX = 'clicks:';
+const DEV_PREFIX = 'devs:';
+const GEO_PREFIX = 'geo:';
 
 // ---------------------------------------------------------------------------
 // L1 in-process memory cache – optimised with typed expiry slots
@@ -85,11 +87,59 @@ async function checkRedisConnection() {
 }
 
 /**
+ * Detect device type from User-Agent string.
+ * Returns 'mobile', 'tablet', or 'desktop'.
+ */
+function detectDeviceType(userAgent = '') {
+  if (!userAgent) return 'unknown';
+  if (/tablet|ipad|kindle|silk|playbook/i.test(userAgent)) return 'tablet';
+  if (/mobile|android|iphone|ipod|blackberry|windows phone/i.test(userAgent)) return 'mobile';
+  return 'desktop';
+}
+
+/**
+ * Increment device-type counter for a short code (fire-and-forget safe).
+ */
+async function trackDeviceStat(shortCode, deviceType) {
+  if (!redis) return;
+  try {
+    await redis.hincrby(`${DEV_PREFIX}${shortCode}`, deviceType, 1);
+  } catch { /* fire-and-forget */ }
+}
+
+/**
+ * Increment country counter for a short code (fire-and-forget safe).
+ */
+async function trackGeoStat(shortCode, country) {
+  if (!redis || !country) return;
+  try {
+    await redis.hincrby(`${GEO_PREFIX}${shortCode}`, country, 1);
+  } catch { /* fire-and-forget */ }
+}
+
+/**
+ * Delete a link record and its associated counters from Redis and L1 cache.
+ */
+async function deleteLink(shortCode) {
+  if (!redis) return;
+  l1Delete(shortCode);
+  try {
+    await redis.del(
+      `${LINK_PREFIX}${shortCode}`,
+      `${CLICKS_PREFIX}${shortCode}`,
+      `${DEV_PREFIX}${shortCode}`,
+      `${GEO_PREFIX}${shortCode}`
+    );
+  } catch { /* best-effort */ }
+}
+
+/**
  * Create a new shortened link in Redis.
  * Record fields: u (url), t (expiry epoch ms, 0=never), e (enabled), p (protected),
- *                r (redirect type as int), ca (createdAt ISO)
+ *                r (redirect type as int), ca (createdAt ISO), mc (max clicks),
+ *                pw (SHA-256 password hash, optional)
  */
-async function createLink(shortCode, originalUrl, ttlSeconds = null, redirectType = '308', maxClicks = 0) {
+async function createLink(shortCode, originalUrl, ttlSeconds = null, redirectType = '308', maxClicks = 0, passwordHash = null) {
   if (!redis) throw new Error('Redis connection is not available');
   const key = `${LINK_PREFIX}${shortCode}`;
 
@@ -107,6 +157,7 @@ async function createLink(shortCode, originalUrl, ttlSeconds = null, redirectTyp
     r: rInt,
     ca: new Date(now).toISOString(),
     mc: Number(maxClicks) || 0,
+    ...(passwordHash && { pw: passwordHash }),
   };
 
   const setOptions = ttlSeconds ? { nx: true, ex: ttlSeconds } : { nx: true };
@@ -159,10 +210,20 @@ async function findByShortCode(shortCode) {
   const pipeline = redis.pipeline();
   pipeline.get(`${LINK_PREFIX}${shortCode}`);
   pipeline.get(`${CLICKS_PREFIX}${shortCode}`);
-  const [rawRecord, clicks] = await pipeline.exec();
+  pipeline.hgetall(`${DEV_PREFIX}${shortCode}`);
+  pipeline.hgetall(`${GEO_PREFIX}${shortCode}`);
+  const [rawRecord, clicks, rawDevStats, rawGeoStats] = await pipeline.exec();
 
   if (!rawRecord) return null;
   const record = typeof rawRecord === 'string' ? JSON.parse(rawRecord) : rawRecord;
+
+  const normalizeHash = (raw) => {
+    if (!raw) return {};
+    const out = {};
+    for (const [k, v] of Object.entries(raw)) out[k] = Number(v) || 0;
+    return out;
+  };
+
   return {
     shortCode,
     originalUrl: record.u,
@@ -170,6 +231,9 @@ async function findByShortCode(shortCode) {
     createdAt: record.ca || null,
     expiresAt: record.t ? new Date(record.t).toISOString() : null,
     maxClicks: record.mc || 0,
+    passwordProtected: !!record.pw,
+    deviceStats: normalizeHash(rawDevStats),
+    geoStats: normalizeHash(rawGeoStats),
   };
 }
 
@@ -274,4 +338,8 @@ module.exports = {
   l1Delete,
   warmupReady,
   ensureReady,
+  detectDeviceType,
+  trackDeviceStat,
+  trackGeoStat,
+  deleteLink,
 };

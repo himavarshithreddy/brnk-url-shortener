@@ -23,6 +23,12 @@ app.set('trust proxy', 1);
 // Security headers – lightweight, applied globally
 app.use(helmet());
 
+// API version header for all responses
+app.use((req, res, next) => {
+  res.set('X-API-Version', '1.0');
+  next();
+});
+
 const corsOptions = {
   origin: process.env.FRONTEND_URL ? process.env.FRONTEND_URL.replace(/\/$/, '') : '*',
   methods: ['GET', 'POST', 'OPTIONS'],

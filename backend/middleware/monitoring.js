@@ -73,6 +73,9 @@ const stats = {
   killSwitchActive: false,
   killSwitchActivatedAt: 0,
   maliciousLinksWindow: [],
+  // Global redirect throughput counters
+  totalRedirects: new SlidingCounter(MINUTE),
+  redirectsPerHour: new SlidingCounter(HOUR),
 };
 
 const MAX_FLAGGED_LINKS = 1000;
@@ -109,6 +112,10 @@ function recordRedirect(shortCode) {
     stats.redirectsPerLink.set(shortCode, counter);
   }
   counter.increment();
+
+  // Track global redirect throughput
+  stats.totalRedirects.increment();
+  stats.redirectsPerHour.increment();
 }
 
 function recordFlaggedLink(url, reason) {
@@ -197,6 +204,8 @@ function getDashboardData() {
   return {
     linksCreatedLastMinute: stats.linksCreatedPerMinute.length,
     linksCreatedLastHour: stats.linksCreatedPerHour.length,
+    redirectsLastMinute: stats.totalRedirects.count(now),
+    redirectsLastHour: stats.redirectsPerHour.count(now),
     topDomains,
     topRedirects,
     recentFlaggedLinks: recentFlagged,

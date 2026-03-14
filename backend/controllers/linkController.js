@@ -1,4 +1,4 @@
-const { createLink, getRedirectRecord, findByShortCode, findByOriginalUrl, incrementClickCount, checkRedisConnection, ensureReady } = require('../models/Link');
+const { createLink, getRedirectRecord, findByShortCode, incrementClickCount, checkRedisConnection, ensureReady } = require('../models/Link');
 const { customAlphabet } = require('nanoid');
 const { recordLinkCreation, recordRedirect, detectClickAnomaly, getDashboardData } = require('../middleware/monitoring');
 
@@ -94,22 +94,6 @@ const createShortUrl = async (req, res) => {
 
   try {
     await ensureReady();
-
-    // Idempotency: if no custom code, no TTL, and the default redirect type,
-    // check if URL was already shortened and return the existing mapping.
-    // Requests that specify a TTL or a non-default redirect type always create
-    // a new link — those parameters define distinct links and must not silently
-    // receive an existing entry with different settings.
-    if (!customShortCode && !ttlSeconds && resolvedRedirectType === '308') {
-      const existing = await findByOriginalUrl(originalUrl);
-      if (existing) {
-        return res.json({
-          shortCode: existing.shortCode,
-          originalUrl: existing.originalUrl,
-          expiresAt: existing.expiresAt,
-        });
-      }
-    }
 
     // For custom codes, attempt once; for random codes, retry on collision
     const MAX_RETRIES = customShortCode ? 1 : 5;

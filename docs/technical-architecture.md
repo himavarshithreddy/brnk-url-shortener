@@ -99,7 +99,7 @@ Security and validation layers execute before persistence:
 6. optional CAPTCHA verification
 7. `createShortUrl` persists mapping in Redis
 
-**Idempotency**: When no custom code is provided, the system checks a reverse URL index (`u:<originalUrl>` → `shortCode`). If the same URL was previously shortened and the link is still valid, the existing short code is returned without creating a duplicate.
+**Each URL creation request always produces a new, independent short code.** This ensures each short link is an isolated tracking entity with its own click analytics and unambiguous ownership.
 
 Response includes `shortCode`, `originalUrl`, and optional `expiresAt`.
 
@@ -169,7 +169,6 @@ Full request and response contracts are documented in [`api-reference.md`](./api
 |---|---|---|
 | `l:<shortCode>` | JSON object | Link record (compact fields for redirect speed) |
 | `clicks:<shortCode>` | Integer | Click counter (separate from link record) |
-| `u:<originalUrl>` | String | Reverse URL index → shortCode (for idempotent creation) |
 
 ### Link record structure (`l:<shortCode>`)
 
@@ -198,10 +197,6 @@ Expiration is enforced at two levels:
 2. **Application-level check** (`t` field): The redirect handler checks `record.t > 0 && Date.now() > record.t` and returns HTTP 410 for expired links. This catches edge cases where the L1 cache serves a stale record.
 
 Both mechanisms are set at creation time when `ttl` is provided.
-
-### Reverse URL index (`u:<originalUrl>`)
-
-Maps an original URL to its existing short code. Set with the same TTL as the link record. Used for idempotent creation: if the same URL is submitted without a custom code, the existing short code is returned.
 
 ## 9) Caching strategy
 

@@ -1,4 +1,4 @@
-const { createLink, getRedirectRecord, findByShortCode, findByOriginalUrl, incrementClickCount, checkRedisConnection, ensureReady } = require('../models/Link');
+const { createLink, getRedirectRecord, findByShortCode, incrementClickCount, checkRedisConnection, ensureReady } = require('../models/Link');
 const { customAlphabet } = require('nanoid');
 const { recordLinkCreation, recordRedirect, detectClickAnomaly, getDashboardData } = require('../middleware/monitoring');
 
@@ -138,18 +138,6 @@ const createShortUrl = async (req, res) => {
 
   try {
     await ensureReady();
-
-    // Idempotency: if no custom code, check if URL was already shortened
-    if (!customShortCode) {
-      const existing = await findByOriginalUrl(originalUrl);
-      if (existing) {
-        return res.json({
-          shortCode: existing.shortCode,
-          originalUrl: existing.originalUrl,
-          expiresAt: existing.expiresAt,
-        });
-      }
-    }
 
     // For custom codes, attempt once; for random codes, retry on collision
     const MAX_RETRIES = customShortCode ? 1 : 5;

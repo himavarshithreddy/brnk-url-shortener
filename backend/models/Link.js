@@ -13,7 +13,6 @@ try {
 
 const LINK_PREFIX = 'l:';
 const CLICKS_PREFIX = 'clicks:';
-const URL_INDEX_PREFIX = 'u:';
 
 // ---------------------------------------------------------------------------
 // L1 in-process memory cache – optimised with typed expiry slots
@@ -89,10 +88,6 @@ async function checkRedisConnection() {
  * Create a new shortened link in Redis.
  * Record fields: u (url), t (expiry epoch ms, 0=never), e (enabled), p (protected),
  *                r (redirect type as int), ca (createdAt ISO)
- *
- * Also maintains a reverse index (u:<url> -> shortCode) so that the same
- * URL submitted without a custom code returns the existing mapping
- * (idempotent creation).
  */
 async function createLink(shortCode, originalUrl, ttlSeconds = null, redirectType = '308', maxClicks = 0) {
   if (!redis) throw new Error('Redis connection is not available');
@@ -122,41 +117,10 @@ async function createLink(shortCode, originalUrl, ttlSeconds = null, redirectTyp
   // Eagerly populate L1 cache so the first redirect is served from memory
   l1Set(shortCode, record);
 
-  // Maintain reverse URL index for idempotent creation
-  const urlKey = `${URL_INDEX_PREFIX}${originalUrl}`;
-  const urlSetOptions = ttlSeconds ? { ex: ttlSeconds } : {};
-  redis.set(urlKey, shortCode, urlSetOptions).catch((err) => {
-    console.error('Failed to set reverse URL index:', err.message);
-  });
-
   return {
     shortCode,
     originalUrl,
     expiresAt: expiresTimestamp ? new Date(expiresTimestamp).toISOString() : null,
-  };
-}
-
-/**
- * Look up an existing short code for a URL via the reverse index.
- * Returns { shortCode, originalUrl, expiresAt } if found and still valid, null otherwise.
- */
-async function findByOriginalUrl(originalUrl) {
-  if (!redis) throw new Error('Redis connection is not available');
-
-  const urlKey = `${URL_INDEX_PREFIX}${originalUrl}`;
-  const existingCode = await redis.get(urlKey);
-  if (!existingCode) return null;
-
-  // Verify the link still exists and is valid
-  const record = await getRedirectRecord(existingCode);
-  if (!record) return null;
-  if (record.e !== 1) return null;
-  if (record.t > 0 && Date.now() > record.t) return null;
-
-  return {
-    shortCode: existingCode,
-    originalUrl: record.u,
-    expiresAt: record.t ? new Date(record.t).toISOString() : null,
   };
 }
 
@@ -292,7 +256,6 @@ module.exports = {
   createLink,
   getRedirectRecord,
   findByShortCode,
-  findByOriginalUrl,
   incrementClickCount,
   flushClickBuffer,
   checkRedisConnection,

@@ -1,10 +1,19 @@
 /**
  * Tests for idempotent URL creation via the reverse index (u:<originalUrl>).
  *
+ * Idempotency only applies when ALL of the following are true:
+ *  - no custom short code
+ *  - no TTL (permanent link)
+ *  - default redirect type (308)
+ *
+ * Any request that specifies a TTL or a non-default redirect type must always
+ * create a new independent link — returning an existing link with different
+ * settings would silently break the caller's expectations.
+ *
  * Covers:
- *  1. createShortUrl controller — returns the existing short code when the
- *     same URL is submitted again without a custom code.
- *  2. findByOriginalUrl model helper — reverse-index lookup behaviour.
+ *  1. createShortUrl controller — idempotent path (no ttl, default type)
+ *  2. createShortUrl controller — bypass paths (ttl set, non-default type)
+ *  3. findByOriginalUrl model helper — reverse-index lookup behaviour
  */
 
 // ---------------------------------------------------------------------------
@@ -177,6 +186,121 @@ describe('createShortUrl — idempotent creation', () => {
 
     expect(res.statusCode).toBe(400);
     expect(res.body).toMatchObject({ error: 'Shortcode already exists' });
+  });
+
+  // -------------------------------------------------------------------------
+  // Parameter-aware bypass: TTL
+  // -------------------------------------------------------------------------
+  test('skips reverse-index check and creates a new link when TTL is specified', async () => {
+    const originalUrl = 'https://example.com/ttl-link';
+    const expiresAt = new Date(Date.now() + 3600 * 1000).toISOString();
+
+    createLink.mockResolvedValue({
+      shortCode: 'ttlC',
+      originalUrl,
+      expiresAt,
+    });
+
+    // Even if a reverse-index entry exists, it must be ignored when TTL is set
+    findByOriginalUrl.mockResolvedValue({
+      shortCode: 'old1',
+      originalUrl,
+      expiresAt: null,
+    });
+
+    const req = makeReq({ originalUrl, ttl: 3600 });
+    const res = makeRes();
+
+    await createShortUrl(req, res);
+
+    expect(findByOriginalUrl).not.toHaveBeenCalled();
+    expect(createLink).toHaveBeenCalledWith(
+      expect.any(String),
+      originalUrl,
+      3600,
+      '308',
+    );
+    // A newly generated code is returned, not the stale reverse-index entry
+    expect(res.body.shortCode).not.toBe('old1');
+    expect(res.body.originalUrl).toBe(originalUrl);
+  });
+
+  // -------------------------------------------------------------------------
+  // Parameter-aware bypass: non-default redirect type
+  // -------------------------------------------------------------------------
+  test('skips reverse-index check and creates a new link when redirectType is non-default', async () => {
+    const originalUrl = 'https://example.com/redirect-type';
+
+    createLink.mockResolvedValue({
+      shortCode: 'rt01',
+      originalUrl,
+      expiresAt: null,
+    });
+
+    findByOriginalUrl.mockResolvedValue({
+      shortCode: 'old2',
+      originalUrl,
+      expiresAt: null,
+    });
+
+    const req = makeReq({ originalUrl, redirectType: '301' });
+    const res = makeRes();
+
+    await createShortUrl(req, res);
+
+    expect(findByOriginalUrl).not.toHaveBeenCalled();
+    expect(createLink).toHaveBeenCalledWith(
+      expect.any(String),
+      originalUrl,
+      null,
+      '301',
+    );
+    // A newly generated code is returned, not the stale reverse-index entry
+    expect(res.body.shortCode).not.toBe('old2');
+    expect(res.body.originalUrl).toBe(originalUrl);
+  });
+
+  test('skips reverse-index check when both TTL and non-default redirectType are set', async () => {
+    const originalUrl = 'https://example.com/both-params';
+
+    createLink.mockResolvedValue({
+      shortCode: 'bp01',
+      originalUrl,
+      expiresAt: new Date(Date.now() + 7200 * 1000).toISOString(),
+    });
+
+    const req = makeReq({ originalUrl, ttl: 7200, redirectType: '302' });
+    const res = makeRes();
+
+    await createShortUrl(req, res);
+
+    expect(findByOriginalUrl).not.toHaveBeenCalled();
+    expect(createLink).toHaveBeenCalledWith(
+      expect.any(String),
+      originalUrl,
+      7200,
+      '302',
+    );
+  });
+
+  test('applies idempotency when explicit redirectType=308 (same as default) and no TTL', async () => {
+    const originalUrl = 'https://example.com/explicit-308';
+
+    findByOriginalUrl.mockResolvedValue({
+      shortCode: 'e308',
+      originalUrl,
+      expiresAt: null,
+    });
+
+    const req = makeReq({ originalUrl, redirectType: '308' });
+    const res = makeRes();
+
+    await createShortUrl(req, res);
+
+    // Explicit 308 is indistinguishable from the default — idempotency must apply
+    expect(findByOriginalUrl).toHaveBeenCalledWith(originalUrl);
+    expect(createLink).not.toHaveBeenCalled();
+    expect(res.body.shortCode).toBe('e308');
   });
 });
 

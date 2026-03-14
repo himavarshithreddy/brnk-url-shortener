@@ -268,6 +268,7 @@ function Main() {
   const [selfDestruct, setSelfDestruct] = useState(false);
   const [usePassword, setUsePassword] = useState(false);
   const [password, setPassword] = useState('');
+  const [preview, setPreview] = useState(false);
   const [mode, setMode] = useState('shorten');
   const qrRef = useRef(null);
   const apiUrl = (process.env.REACT_APP_API_URL || '').replace(/\/+$/, '');
@@ -294,6 +295,7 @@ function Main() {
   const [expiresAt, setExpiresAt] = useState('');
   const [resultSelfDestruct, setResultSelfDestruct] = useState(false);
   const [resultPasswordProtected, setResultPasswordProtected] = useState(false);
+  const [resultPreview, setResultPreview] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -372,6 +374,7 @@ function Main() {
             ? { selfDestruct: true }
             : (maxClicks && { maxClicks: parseInt(maxClicks, 10) })),
           ...(usePassword && password && { password }),
+          ...(preview && { preview: true }),
           ...(captchaToken && { captchaToken }),
         }),
       });
@@ -385,6 +388,7 @@ function Main() {
         setExpiresAt(data.expiresAt || '');
         setResultSelfDestruct(!!data.selfDestruct);
         setResultPasswordProtected(!!data.passwordProtected);
+        setResultPreview(!!data.preview);
         setError('');
       } else {
         setError(data.error || 'Failed to shorten URL.');
@@ -704,7 +708,7 @@ function Main() {
               </div>
             </div>
 
-            {/* Self-Destruct and Password Protection toggles */}
+            {/* Self-Destruct, Password Protection, and Preview toggles */}
             <div className="extra-options-row">
               <button
                 type="button"
@@ -732,6 +736,20 @@ function Main() {
                   <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                 </svg>
                 Password
+              </button>
+
+              <button
+                type="button"
+                className={`extra-opt-btn${preview ? ' active' : ''}`}
+                onClick={() => setPreview(v => !v)}
+                aria-pressed={preview}
+                title="Show a preview page before redirecting"
+              >
+                <svg className="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                Preview
               </button>
             </div>
 
@@ -793,7 +811,7 @@ function Main() {
             ) : (
               <div className="result" aria-live="polite">
                 <h2 className="shortened-text">Shortened URL:</h2>
-                {(resultSelfDestruct || resultPasswordProtected) && (
+                {(resultSelfDestruct || resultPasswordProtected || resultPreview) && (
                   <div className="result-badges">
                     {resultSelfDestruct && (
                       <span className="result-badge badge-self-destruct" title="This link can only be clicked once">
@@ -811,6 +829,15 @@ function Main() {
                           <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                         </svg>
                         Password Protected
+                      </span>
+                    )}
+                    {resultPreview && (
+                      <span className="result-badge badge-preview" title="Visitors see a preview before redirect">
+                        <svg className="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                          <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        Preview Enabled
                       </span>
                     )}
                   </div>

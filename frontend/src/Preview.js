@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import './App.css';
@@ -31,7 +31,10 @@ function PreviewPage() {
       });
   }, [shortCode, apiUrl]);
 
-  // Expiry countdown timer
+  // Countdown timer ref – kept so the interval can be cancelled as soon as the link expires.
+  const countdownTimerRef = useRef(null);
+
+  // Expiry countdown timer: fetches expiry once, then counts down purely client-side.
   useEffect(() => {
     if (!linkInfo || !linkInfo.expiresAt) return;
 
@@ -39,6 +42,7 @@ function PreviewPage() {
       const remaining = new Date(linkInfo.expiresAt).getTime() - Date.now();
       if (remaining <= 0) {
         setCountdown('Expired');
+        clearInterval(countdownTimerRef.current);
         return;
       }
       const hours = Math.floor(remaining / 3_600_000);
@@ -50,8 +54,8 @@ function PreviewPage() {
     };
 
     updateCountdown();
-    const timer = setInterval(updateCountdown, 1000);
-    return () => clearInterval(timer);
+    countdownTimerRef.current = setInterval(updateCountdown, 1000);
+    return () => clearInterval(countdownTimerRef.current);
   }, [linkInfo]);
 
   const handleContinue = useCallback(() => {

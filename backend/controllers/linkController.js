@@ -139,8 +139,9 @@ const createShortUrl = async (req, res) => {
   try {
     await ensureReady();
 
-    // For custom codes, attempt once; for random codes, retry on collision
-    const MAX_RETRIES = customShortCode ? 1 : 5;
+    // For custom codes, attempt once; for random codes, retry on collision.
+    // 10 attempts handles high-saturation scenarios where the 4-char pool starts filling up.
+    const MAX_RETRIES = customShortCode ? 1 : 10;
     let link = null;
     let shortCode = customShortCode || getPooledCode();
 
@@ -200,9 +201,15 @@ const getOriginalUrl = async (req, res) => {
       return res.status(404).json({ error: 'Link not found' });
     }
 
-    // Bot detection – return OG meta tags for link unfurling instead of redirect
+    // Bot detection – return OG meta tags for link unfurling instead of redirect.
+    // Secondary Accept-header guard: real crawlers never negotiate application/xhtml+xml,
+    // but browsers always do.  This prevents a spoofed UA (e.g. "Twitterbot") sent by a
+    // browser from bypassing the redirect and skipping click-count updates.
     const ua = req.headers['user-agent'] || '';
-    if (BOT_UA_RE.test(ua)) {
+    const accept = req.headers['accept'] || '';
+    const isBotUa = BOT_UA_RE.test(ua);
+    const isBrowserAccept = /application\/xhtml\+xml/i.test(accept);
+    if (isBotUa && !isBrowserAccept) {
       const html = generateOgHtml(record.u, shortCode);
       res.set('Content-Type', 'text/html; charset=utf-8');
       res.set(CACHE_HEADERS_NOSTORE);

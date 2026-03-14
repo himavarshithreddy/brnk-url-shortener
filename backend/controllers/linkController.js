@@ -258,11 +258,10 @@ const getOriginalUrl = async (req, res) => {
       // record.r is already an integer (normalised at cache/fetch time)
       const statusCode = record.r || 308;
       res.set('Location', record.u);
-      if (statusCode === 301 || statusCode === 308) {
-        res.set(CACHE_HEADERS_PERMANENT);
-      } else {
-        res.set(CACHE_HEADERS_NOSTORE);
-      }
+      // Always use no-store for limited links so browsers and CDN edges never
+      // cache the redirect – a cached response would bypass the click-count
+      // check on subsequent requests, defeating maxClicks / self-destruct.
+      res.set(CACHE_HEADERS_NOSTORE);
       res.status(statusCode).end();
 
       // Fire-and-forget analytics (click already incremented above)

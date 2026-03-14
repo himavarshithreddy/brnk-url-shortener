@@ -298,6 +298,43 @@ function Main() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  // ---------------------------------------------------------------------------
+  // Link history — persisted in localStorage
+  // ---------------------------------------------------------------------------
+  const HISTORY_KEY = 'brnk_link_history';
+
+  const loadHistory = useCallback(() => {
+    try {
+      const raw = localStorage.getItem(HISTORY_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }, []);
+
+  const [linkHistory, setLinkHistory] = useState(() => loadHistory());
+
+  const saveToHistory = useCallback((entry) => {
+    setLinkHistory(prev => {
+      const next = [entry, ...prev.filter(h => h.shortCode !== entry.shortCode)];
+      try { localStorage.setItem(HISTORY_KEY, JSON.stringify(next)); } catch { /* quota */ }
+      return next;
+    });
+  }, []);
+
+  const deleteFromHistory = useCallback((code) => {
+    setLinkHistory(prev => {
+      const next = prev.filter(h => h.shortCode !== code);
+      try { localStorage.setItem(HISTORY_KEY, JSON.stringify(next)); } catch { /* quota */ }
+      return next;
+    });
+  }, []);
+
+  const clearHistory = useCallback(() => {
+    setLinkHistory([]);
+    try { localStorage.removeItem(HISTORY_KEY); } catch { /* ignore */ }
+  }, []);
+
   const handleInputChange = (event) => {
     setUrl(event.target.value);
   };
@@ -399,6 +436,18 @@ function Main() {
         setResultSelfDestruct(!!data.selfDestruct);
         setResultPasswordProtected(!!data.passwordProtected);
         setError('');
+
+        // Cache link in local history
+        saveToHistory({
+          shortCode: data.shortCode,
+          shortenedUrl: fullShortenedUrl,
+          originalUrl: formattedUrl,
+          createdAt: new Date().toISOString(),
+          expiresAt: data.expiresAt || '',
+          selfDestruct: !!data.selfDestruct,
+          passwordProtected: !!data.passwordProtected,
+          mode,
+        });
       } else {
         setError(data.error || 'Failed to shorten URL.');
       }
@@ -884,6 +933,65 @@ function Main() {
           )}
         </section>
       </main>
+
+      {/* Link History */}
+      {linkHistory.length > 0 && (
+        <section className="history-section" aria-label="Link creation history">
+          <div className="history-header">
+            <h2 className="history-title">
+              <svg className="history-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              Your Link History
+            </h2>
+            <button className="history-clear-btn" onClick={clearHistory} aria-label="Clear all link history">
+              Clear All
+            </button>
+          </div>
+          <ul className="history-list">
+            {linkHistory.map((item) => (
+              <li key={item.shortCode} className="history-item">
+                <div className="history-item-top">
+                  <a href={item.shortenedUrl} target="_blank" rel="noopener noreferrer" className="history-short-url">
+                    {item.shortenedUrl}
+                  </a>
+                  <div className="history-item-actions">
+                    <button
+                      className="history-copy-btn"
+                      onClick={() => navigator.clipboard.writeText(item.shortenedUrl)}
+                      aria-label={`Copy ${item.shortenedUrl}`}
+                    >
+                      Copy
+                    </button>
+                    <button
+                      className="history-delete-btn"
+                      onClick={() => deleteFromHistory(item.shortCode)}
+                      aria-label={`Delete ${item.shortCode} from history`}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                        <path d="M10 11v6"/>
+                        <path d="M14 11v6"/>
+                        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                <p className="history-original-url" title={item.originalUrl}>{item.originalUrl}</p>
+                <div className="history-meta">
+                  <span className="history-date">{new Date(item.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                  {item.mode === 'qrcode' && <span className="history-badge history-badge-qr">QR</span>}
+                  {item.selfDestruct && <span className="history-badge history-badge-sd">Self Destruct</span>}
+                  {item.passwordProtected && <span className="history-badge history-badge-pw">Password</span>}
+                  {item.expiresAt && <span className="history-badge history-badge-exp">Expires {new Date(item.expiresAt).toLocaleDateString()}</span>}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="seo-content" aria-label="About brnk URL Shortener">
         <h2 className="seo-content-heading">Why Choose brnk?</h2>

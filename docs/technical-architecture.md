@@ -9,7 +9,7 @@
 - Redirect behavior selection (`301`, `302`, `308`)
 - Security protections (rate limiting, URL safety checks, optional CAPTCHA and Safe Browsing)
 - Operational monitoring with killswitch and dashboard data
-- Interstitial warning page for low-trust or newly created links
+- Interstitial warning page for low-trust links
 - Idempotent link creation (same URL returns existing short code)
 
 ## 2) Techniques used
@@ -131,7 +131,7 @@ Returns metadata including original URL, click count, and timestamps.
 - Home page handles both shortening and QR generation workflows
 - QR library is lazy-loaded to keep initial bundle smaller for link-shortening-first users
 - Track page can parse either a raw short code or a pasted short URL
-- Redirect page resolves short code via `/link-info/:shortCode`, displays interstitial warning for low-trust or newly created links, and performs browser redirection through the backend
+- Redirect page resolves short code via `/link-info/:shortCode`, displays interstitial warning for low-trust links, and performs browser redirection through the backend
 - API host can be configured via environment variable in frontend runtime
 
 ### Interstitial warning page
@@ -139,7 +139,7 @@ Returns metadata including original URL, click count, and timestamps.
 When a user visits a short link through the frontend, the Redirect page:
 
 1. Fetches `/link-info/:shortCode` to get trust score and warning metadata
-2. If `showWarning` is true (trust score < 50 or link created < 24h ago), displays a warning with the destination URL and reason
+2. If `showWarning` is true (trust score < 50), displays a warning with the destination URL and reason
 3. User must explicitly click "Continue anyway" to proceed, or "Go back to safety" to return home
 4. If no warning is needed, redirects automatically
 
@@ -337,6 +337,6 @@ Rate limiting operates at multiple layers and dimensions:
 
 - Backend root route `GET /` returns JSON service message
 - Frontend contains explicit routes for `/`, `/track`, and `/:shortCode`
-- Frontend `Redirect.js` shows interstitial warning for low-trust and newly created links
+- Frontend `Redirect.js` shows interstitial warning for low-trust links
 - Frontend unit tests are not currently present
 - All API responses include `X-API-Version: 1.0` header

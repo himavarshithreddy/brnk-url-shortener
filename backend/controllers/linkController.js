@@ -14,6 +14,12 @@ const generateShortCode = customAlphabet(SHORT_CODE_ALPHABET, SHORT_CODE_LENGTH)
 const VALID_SHORT_CODE_RE = /^[a-zA-Z0-9_-]+$/;
 const VALID_CUSTOM_CODE_RE = /^[a-zA-Z0-9-]+$/;
 
+// Fire-and-forget helper: tracks device type and geo-country for a click.
+function trackClickStats(shortCode, userAgent, country) {
+  trackDeviceStat(shortCode, detectDeviceType(userAgent)).catch(() => {});
+  if (country) trackGeoStat(shortCode, country).catch(() => {});
+}
+
 // ---------------------------------------------------------------------------
 // Short-code pre-generation pool
 // Generates codes in background so the creation path never blocks on nanoid.
@@ -264,9 +270,7 @@ const getOriginalUrl = async (req, res) => {
       if (detectClickAnomaly(shortCode)) {
         console.warn(`[ANOMALY] Link ${shortCode} has anomalous click volume`);
       }
-      trackDeviceStat(shortCode, detectDeviceType(ua)).catch(() => {});
-      const country = req.headers['x-vercel-ip-country'] || '';
-      if (country) trackGeoStat(shortCode, country).catch(() => {});
+      trackClickStats(shortCode, ua, req.headers['x-vercel-ip-country'] || '');
       return;
     }
 
@@ -289,9 +293,7 @@ const getOriginalUrl = async (req, res) => {
     if (detectClickAnomaly(shortCode)) {
       console.warn(`[ANOMALY] Link ${shortCode} has anomalous click volume`);
     }
-    trackDeviceStat(shortCode, detectDeviceType(ua)).catch(() => {});
-    const country = req.headers['x-vercel-ip-country'] || '';
-    if (country) trackGeoStat(shortCode, country).catch(() => {});
+    trackClickStats(shortCode, ua, req.headers['x-vercel-ip-country'] || '');
   } catch (err) {
     if (err.message === 'Redis connection is not available') {
       return res.status(503).json({ error: 'Service temporarily unavailable. Please try again later.' });
@@ -461,10 +463,7 @@ const verifyLinkPassword = async (req, res) => {
     recordRedirect(shortCode);
 
     // Track device / geo stats for this verified access
-    const ua = req.headers['user-agent'] || '';
-    trackDeviceStat(shortCode, detectDeviceType(ua)).catch(() => {});
-    const country = req.headers['x-vercel-ip-country'] || '';
-    if (country) trackGeoStat(shortCode, country).catch(() => {});
+    trackClickStats(shortCode, req.headers['user-agent'] || '', req.headers['x-vercel-ip-country'] || '');
 
     res.json({ verified: true, originalUrl: record.u });
   } catch (err) {

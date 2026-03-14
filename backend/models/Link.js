@@ -217,7 +217,7 @@ async function findByShortCode(shortCode) {
   if (!rawRecord) return null;
   const record = typeof rawRecord === 'string' ? JSON.parse(rawRecord) : rawRecord;
 
-  const normaliseHash = (raw) => {
+  const normalizeHash = (raw) => {
     if (!raw) return {};
     const out = {};
     for (const [k, v] of Object.entries(raw)) out[k] = Number(v) || 0;
@@ -232,8 +232,8 @@ async function findByShortCode(shortCode) {
     expiresAt: record.t ? new Date(record.t).toISOString() : null,
     maxClicks: record.mc || 0,
     passwordProtected: !!record.pw,
-    deviceStats: normaliseHash(rawDevStats),
-    geoStats: normaliseHash(rawGeoStats),
+    deviceStats: normalizeHash(rawDevStats),
+    geoStats: normalizeHash(rawGeoStats),
   };
 }
 

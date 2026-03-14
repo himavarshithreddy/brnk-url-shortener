@@ -719,7 +719,7 @@ function Main() {
               <button
                 type="button"
                 className={`extra-opt-btn${usePassword ? ' active' : ''}`}
-                onClick={() => { setUsePassword(v => !v); if (usePassword) setPassword(''); }}
+                onClick={() => { setUsePassword(v => !v); setPassword(''); }}
                 aria-pressed={usePassword}
                 title="Protect this link with a password"
               >

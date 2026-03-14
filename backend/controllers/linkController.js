@@ -96,7 +96,7 @@ function isValidUrl(string) {
 }
 
 const createShortUrl = async (req, res) => {
-  const { originalUrl, customShortCode, ttl, redirectType, maxClicks, password, selfDestruct, preview } = req.body;
+  const { originalUrl, customShortCode, ttl, redirectType, maxClicks, password, selfDestruct } = req.body;
 
   if (!originalUrl || typeof originalUrl !== 'string') {
     return res.status(400).json({ error: 'Original URL is required' });
@@ -165,7 +165,7 @@ const createShortUrl = async (req, res) => {
     let shortCode = customShortCode || getPooledCode();
 
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-      link = await createLink(shortCode, originalUrl, ttlSeconds, resolvedRedirectType, resolvedMaxClicks, passwordHash, !!preview);
+      link = await createLink(shortCode, originalUrl, ttlSeconds, resolvedRedirectType, resolvedMaxClicks, passwordHash);
       if (link) break;
       if (customShortCode) break; // custom codes don't retry
       shortCode = getPooledCode(); // generate a new random code and retry
@@ -185,7 +185,6 @@ const createShortUrl = async (req, res) => {
       maxClicks: resolvedMaxClicks,
       selfDestruct: !!selfDestruct,
       passwordProtected: !!passwordHash,
-      preview: !!preview,
     });
   } catch (err) {
     if (err.message === 'Redis connection is not available') {
@@ -247,14 +246,6 @@ const getOriginalUrl = async (req, res) => {
       res.set('Content-Type', 'text/html; charset=utf-8');
       res.set(CACHE_HEADERS_NOSTORE);
       return res.status(200).send(html);
-    }
-
-    // Preview-enabled links: redirect to /preview/:shortCode so the visitor
-    // sees the safety page first.  The preview page "Continue" button sends
-    // the user back here with ?nopreview=1 to perform the actual redirect.
-    if (record.pv && !req.query.nopreview) {
-      res.set(CACHE_HEADERS_NOSTORE);
-      return res.redirect(302, `/preview/${encodeURIComponent(shortCode)}`);
     }
 
     // maxClicks enforcement – check before redirecting
@@ -420,7 +411,6 @@ const getLinkInfo = async (req, res) => {
       expiresAt: record.t ? new Date(record.t).toISOString() : null,
       clickCount,
       maxClicks: record.mc || 0,
-      preview: !!record.pv,
     });
   } catch (err) {
     if (err.message === 'Redis connection is not available') {

@@ -34,7 +34,6 @@
       { "src": "/asset-manifest\\.json", "dest": "/frontend/build/asset-manifest.json" },
       { "src": "/logo([0-9]+)\\.png", "dest": "/frontend/build/logo$1.png" },
       { "src": "^/track$", "dest": "/frontend/build/index.html" },
-      { "src": "^/preview/([^/]+)$", "dest": "/frontend/build/index.html" },
       { "src": "^/$", "dest": "/frontend/build/index.html" },
       { "src": "/([a-zA-Z0-9_-]+)", "dest": "/backend/server.js" }
     ]

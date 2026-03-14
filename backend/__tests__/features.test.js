@@ -186,12 +186,6 @@ describe('vercel.json routing', () => {
     expect(linkInfoRoute.dest).toBe('/backend/server.js');
   });
 
-  test('has preview route to frontend', () => {
-    const previewRoute = vercelConfig.routes.find(r => r.src && r.src.includes('preview'));
-    expect(previewRoute).toBeDefined();
-    expect(previewRoute.dest).toBe('/frontend/build/index.html');
-  });
-
   test('has verify-password route to backend', () => {
     const vpRoute = vercelConfig.routes.find(r => r.src && r.src.includes('verify-password'));
     expect(vpRoute).toBeDefined();

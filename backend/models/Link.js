@@ -124,7 +124,9 @@ async function createLink(shortCode, originalUrl, ttlSeconds = null, redirectTyp
   // Maintain reverse URL index for idempotent creation
   const urlKey = `${URL_INDEX_PREFIX}${originalUrl}`;
   const urlSetOptions = ttlSeconds ? { ex: ttlSeconds } : {};
-  redis.set(urlKey, shortCode, urlSetOptions).catch(() => {});
+  redis.set(urlKey, shortCode, urlSetOptions).catch((err) => {
+    console.error('Failed to set reverse URL index:', err.message);
+  });
 
   return {
     shortCode,
@@ -214,6 +216,7 @@ async function findByShortCode(shortCode) {
 const clickBuffer = new Map();        // shortCode -> pending count
 const CLICK_FLUSH_INTERVAL_MS = 5_000;
 const CLICK_FLUSH_THRESHOLD = 50;     // flush a code early if it has this many pending
+const CLICK_BUFFER_MAX_SIZE = 10_000; // cap total entries to prevent memory exhaustion
 
 async function flushClickBuffer() {
   if (!redis || clickBuffer.size === 0) return;
@@ -242,6 +245,9 @@ if (clickFlushTimer.unref) clickFlushTimer.unref();
  * Clicks are batched and flushed to Redis periodically.
  */
 function incrementClickCount(shortCode) {
+  // Drop clicks if buffer is at capacity (prevents memory exhaustion during Redis outage)
+  if (!clickBuffer.has(shortCode) && clickBuffer.size >= CLICK_BUFFER_MAX_SIZE) return;
+
   const pending = (clickBuffer.get(shortCode) || 0) + 1;
   clickBuffer.set(shortCode, pending);
   // Flush eagerly for high-traffic codes to keep counts roughly accurate

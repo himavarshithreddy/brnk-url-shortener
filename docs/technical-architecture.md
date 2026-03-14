@@ -176,7 +176,7 @@ Full request and response contracts are documented in [`api-reference.md`](./api
 ```json
 {
   "u": "https://example.com/long/path",   // original URL
-  "t": 1704067200000,                     // expiry epoch (ms), 0 = never expires
+  "t": 1704067200000,                     // expires epoch (ms), 0 = never expires
   "e": 1,                                 // enabled flag (1 = active, 0 = disabled)
   "p": 0,                                 // protected flag (reserved)
   "r": 308,                               // redirect status code (integer)

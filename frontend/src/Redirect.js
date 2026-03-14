@@ -116,7 +116,7 @@ function RedirectPage() {
               Continue anyway
             </button>
             <button
-              onClick={() => window.location.replace('/')}
+              onClick={() => { window.location.href = '/'; }}
               style={{
                 padding: '0.6rem 1.5rem',
                 background: '#2ecc71',

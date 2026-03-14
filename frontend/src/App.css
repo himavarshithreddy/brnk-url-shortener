@@ -2177,6 +2177,12 @@ nav[aria-label="Site navigation"] {
   background: rgba(255, 253, 247, 0.08);
 }
 
+.badge-preview {
+  border-color: #4fc3f7;
+  color: #4fc3f7;
+  background: rgba(79, 195, 247, 0.08);
+}
+
 /* ---- Tracking stats bars ---- */
 
 .tracking-stats-section {

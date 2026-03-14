@@ -60,7 +60,7 @@ function PreviewPage() {
 
   const handleContinue = useCallback(() => {
     if (linkInfo) {
-      window.location.href = `${(process.env.REACT_APP_API_URL || window.location.origin).replace(/\/+$/, '')}/${encodeURIComponent(shortCode)}`;
+      window.location.href = `${(process.env.REACT_APP_API_URL || window.location.origin).replace(/\/+$/, '')}/${encodeURIComponent(shortCode)}?nopreview=1`;
     }
   }, [linkInfo, shortCode]);
 

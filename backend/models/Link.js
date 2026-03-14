@@ -137,9 +137,9 @@ async function deleteLink(shortCode) {
  * Create a new shortened link in Redis.
  * Record fields: u (url), t (expiry epoch ms, 0=never), e (enabled), p (protected),
  *                r (redirect type as int), ca (createdAt ISO), mc (max clicks),
- *                pw (SHA-256 password hash, optional)
+ *                pw (SHA-256 password hash, optional), pv (preview enabled, optional)
  */
-async function createLink(shortCode, originalUrl, ttlSeconds = null, redirectType = '308', maxClicks = 0, passwordHash = null) {
+async function createLink(shortCode, originalUrl, ttlSeconds = null, redirectType = '308', maxClicks = 0, passwordHash = null, preview = false) {
   if (!redis) throw new Error('Redis connection is not available');
   const key = `${LINK_PREFIX}${shortCode}`;
 
@@ -158,6 +158,7 @@ async function createLink(shortCode, originalUrl, ttlSeconds = null, redirectTyp
     ca: new Date(now).toISOString(),
     mc: Number(maxClicks) || 0,
     ...(passwordHash && { pw: passwordHash }),
+    ...(preview && { pv: 1 }),
   };
 
   const setOptions = ttlSeconds ? { nx: true, ex: ttlSeconds } : { nx: true };

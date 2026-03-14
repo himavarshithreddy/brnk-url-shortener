@@ -713,7 +713,11 @@ function Main() {
                 aria-pressed={selfDestruct}
                 title="Link deletes itself after the first click"
               >
-                🔥 Self Destruct
+                <svg className="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M12 2C9.5 6 7 9 7 13a5 5 0 0 0 10 0c0-4-2.5-7-5-11z"/>
+                  <path d="M12 10c-1 2-2 3.5-2 5a2 2 0 0 0 4 0c0-1.5-1-3-2-5z"/>
+                </svg>
+                Self Destruct
               </button>
 
               <button
@@ -723,7 +727,11 @@ function Main() {
                 aria-pressed={usePassword}
                 title="Protect this link with a password"
               >
-                🔒 Password
+                <svg className="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                Password
               </button>
             </div>
 
@@ -789,12 +797,20 @@ function Main() {
                   <div className="result-badges">
                     {resultSelfDestruct && (
                       <span className="result-badge badge-self-destruct" title="This link can only be clicked once">
-                        🔥 Self Destruct
+                        <svg className="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M12 2C9.5 6 7 9 7 13a5 5 0 0 0 10 0c0-4-2.5-7-5-11z"/>
+                          <path d="M12 10c-1 2-2 3.5-2 5a2 2 0 0 0 4 0c0-1.5-1-3-2-5z"/>
+                        </svg>
+                        Self Destruct
                       </span>
                     )}
                     {resultPasswordProtected && (
                       <span className="result-badge badge-password" title="This link is password protected">
-                        🔒 Password Protected
+                        <svg className="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                        Password Protected
                       </span>
                     )}
                   </div>
